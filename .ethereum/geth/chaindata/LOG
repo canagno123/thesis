@@ -423,3 +423,21 @@
 15:43:28.753530 table@remove removed @95
 15:43:28.754019 table@remove removed @93
 15:43:28.754105 table@remove removed @94
+=============== Feb 23, 2019 (EET) ===============
+15:11:42.748977 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+15:11:42.749240 version@stat F·[0 2] S·2MiB[0B 2MiB] Sc·[0.00 0.02]
+15:11:42.749270 db@open opening
+15:11:42.749357 journal@recovery F·1
+15:11:42.754475 journal@recovery recovering @96
+15:11:42.757992 memdb@flush created L0@100 N·249 S·13KiB "Dat..ion,v59360":"r\x00\x00..#\xc46,v59604"
+15:11:42.760108 version@stat F·[1 2] S·2MiB[13KiB 2MiB] Sc·[0.25 0.02]
+15:11:42.780692 db@janitor F·5 G·0
+15:11:42.780756 db@open done T·31.451446ms
+15:11:42.863940 table@compaction L0·1 -> L1·2 S·2MiB Q·59611
+15:11:43.010053 table@build created L1@103 N·36189 S·2MiB "\x00\x1a\x9a..\xff\xc7\x13,v51230":"r\x00\x00..\xfe\x99:,v27839"
+15:11:43.035843 table@build created L1@104 N·3912 S·228KiB "r\x00\x00..\xab\x043,v27848":"\xff\xbd\x80..2\xe6C,v54627"
+15:11:43.035918 version@stat F·[0 2] S·2MiB[0B 2MiB] Sc·[0.00 0.02]
+15:11:43.047477 table@compaction committed F-1 S-1KiB Ke·0 D·83 T·183.488399ms
+15:11:43.047616 table@remove removed @100
+15:11:43.048279 table@remove removed @98
+15:11:43.048426 table@remove removed @99

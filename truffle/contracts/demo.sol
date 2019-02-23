@@ -6,13 +6,13 @@ contract demoContract{
 
 	//Struct representing the contract
 	struct Contract{
-		//uint id;
+		//uint id; //May need id for multiple contracts between multiple parties
 		address payable provider;
 		address payable client;
 		uint rootHash;
-		uint collateralAmount;
-		uint price;
-		uint startTime;
+		uint collateralAmount; //collateralAmount is stored in wei (10^-19 eth)
+		uint price; //price is stored in wei (10^-19 eth)
+		uint startTime; //startTime is initiated to now in the init function and is refreshed every time a payment is made. It is caclulated in seconds since the last Epoch.
 	}
 
 	address contractAddress = address(this);
@@ -26,8 +26,7 @@ contract demoContract{
 	public
 	returns (bytes32 initMessage)
 	{
-		if (contractAddress.balance >= collateralAmount) //Will be uncommented for finalised edition
-		//if (address(msg.sender).balance >= collateralAmount) //For testing purposes.
+		if (contractAddress.balance >= collateralAmount)
 		{
 			covenant = Contract(provider, client, rootHash, collateralAmount, price, now);
 			initMessage = "Initialization successfull.";
@@ -69,13 +68,12 @@ contract demoContract{
 	payable
 	returns(bytes32 paymentMessage)
 	{
-		 if (timeDif() >= 100) //Check if 1 month has passed since last payment or the creation of the contract
+		 if (timeDif() >= 2592000) //Check if 1 month has passed since last payment or the creation of the contract
 		 {
 		 	if (clientPaid()) //Check if client has paid the aggreed price
 		 	{
 		 		uint providerBalance = address(covenant.provider).balance;
-		 		// address(covenant.provider).transfer(covenant.price); //Will remain in comment for the function to be compiled with the view keyword
-		 		//providerBalance += covenant.price; //For testing purposes.
+		 		address(covenant.provider).transfer(covenant.price);
 		 		if (address(covenant.provider).balance >= providerBalance + covenant.price) covenant.startTime = now; //If the payment is successfull, change the startTime of the contract to now.
 		 		else return "Transaction failed";
 		 	}
@@ -109,7 +107,8 @@ contract demoContract{
 			address(covenant.provider).transfer(covenant.collateralAmount/2);
 			address(covenant.client).transfer(covenant.collateralAmount/2);
 		}
-		selfdestruct(0x0000000000000000000000000000000000000000); //Selfdestruct contract and burn any remaining Ether.
+		invalidateContract();
+		address(0x0000000000000000000000000000000000000000).transfer(contractAddress.balance); //Burn contract's ether and delete struck entry representing the covenant.
 	}
 
 	/* Function that calculates the time (in seconds) passed
@@ -138,7 +137,18 @@ contract demoContract{
 			return false;
 	}
 
-	// @notice Will receive any eth sent to the contract
+	function invalidateContract()
+	public
+	{
+		covenant.provider = 0x0000000000000000000000000000000000000000;
+		covenant.client = 0x0000000000000000000000000000000000000000;
+		covenant.rootHash = 0;
+		covenant.price = 0;
+		covenant.collateralAmount = 0;
+		covenant.startTime = 0;
+	}
+
+	// Function that makes the contract able to accept payments
 	function () external payable {
 	}
 
