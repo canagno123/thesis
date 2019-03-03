@@ -13,25 +13,6 @@
  */
 
 module.exports = {
-
-rpc: {
-
-host:"localhost",
-
-port:8545
-
-},
-
-networks: {
-
-development: {
-
-host: "localhost", //our network is running on localhost
-
-port: 7545, // port where your blockchain is running
-
-network_id: "5777",
-}
-}
-
+  // See <http://truffleframework.com/docs/advanced/configuration>
+  // to customize your Truffle configuration!
 };

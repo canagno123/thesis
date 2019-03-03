@@ -4,6 +4,15 @@ pragma experimental ABIEncoderV2; //Need to be specified so that functions can r
 
 contract demoContract{
 
+	//Enum to describe the state of the contract
+    enum State { 
+        Inactive, 
+        Cancelled, //Contract terminated from one of two sides
+        Active, //Contract ongoing
+        Completed, //Contract mutually terminated
+        Invalid //Payment failed
+    }
+
 	//Struct representing the contract
 	struct Contract{
 		//uint id; //May need id for multiple contracts between multiple parties
@@ -13,7 +22,9 @@ contract demoContract{
 		uint collateralAmount; //collateralAmount is stored in wei (10^-19 eth)
 		uint price; //price is stored in wei (10^-19 eth)
 		uint startTime; //startTime is initiated to now in the init function and is refreshed every time a payment is made. It is caclulated in seconds since the last Epoch.
+		State state; //state of the contract, taking values from the State enum
 	}
+
 
 	address contractAddress = address(this);
 	Contract public covenant;
@@ -28,7 +39,7 @@ contract demoContract{
 	{
 		if (contractAddress.balance >= collateralAmount)
 		{
-			covenant = Contract(provider, client, rootHash, collateralAmount, price, now);
+			covenant = Contract(provider, client, rootHash, collateralAmount, price, now, State.Active);
 			initMessage = "Initialization successfull.";
 		}
 		else
@@ -68,26 +79,36 @@ contract demoContract{
 	payable
 	returns(bytes32 paymentMessage)
 	{
-		 if (timeDif() >= 2592000) //Check if 1 month has passed since last payment or the creation of the contract
-		 {
-		 	if (clientPaid()) //Check if client has paid the aggreed price
-		 	{
-		 		uint providerBalance = address(covenant.provider).balance;
-		 		address(covenant.provider).transfer(covenant.price);
-		 		if (address(covenant.provider).balance >= providerBalance + covenant.price) covenant.startTime = now; //If the payment is successfull, change the startTime of the contract to now.
-		 		else return "Transaction failed";
-		 	}
-		 	else
-		 	{
-		 		paymentMessage = "Client has not paid.";
-		 		terminate("CLIENT");
+		if (covenant.state == State.Active || covenant.state == State.Invalid)
+		{
+			if (timeDif() >= 2592000) //Check if 1 month has passed since last payment or the creation of the contract
+			{
+				if (clientPaid()) //Check if client has paid the aggreed price
+				{
+		 			uint providerBalance = address(covenant.provider).balance;
+		 			address(covenant.provider).transfer(covenant.price);
+		 			if (address(covenant.provider).balance >= providerBalance + covenant.price) covenant.startTime = now; //If the payment is successfull, change the startTime of the contract to now.
+		 			else {
+						covenant.state = State.Invalid;
+						return "Transaction failed";
+					}	 
+		 		}
+		 		else
+		 		{
+		 			paymentMessage = "Client has not paid.";
+		 			terminate("CLIENT");
+				}
 			}
-		 }
-		 else
-		 {
-		 	paymentMessage = "Payments are made every 1 month.";
-		 }
-		 paymentMessage = "Payment completed.";
+			else
+			{
+				paymentMessage = "Payments are made every 1 month.";
+			}
+			paymentMessage = "Payment completed.";
+		}
+		else
+		{
+			paymentMessage = "Contract is terminated.";
+		}
 	}
 
 
@@ -100,10 +121,19 @@ contract demoContract{
 	public
 	payable
 	{
-		if (culpable == "CLIENT") address(covenant.provider).transfer(covenant.collateralAmount/2);
-		else if (culpable == "PROVIDER") address(covenant.client).transfer(covenant.collateralAmount/2);
+		if (culpable == "CLIENT") 
+		{
+			covenant.state = State.Cancelled;
+			address(covenant.provider).transfer(covenant.collateralAmount/2);
+		}
+		else if (culpable == "PROVIDER")
+		{
+			covenant.state = State.Cancelled;
+			address(covenant.client).transfer(covenant.collateralAmount/2);
+		}
 		else 
 		{
+			covenant.state = State.Completed;
 			address(covenant.provider).transfer(covenant.collateralAmount/2);
 			address(covenant.client).transfer(covenant.collateralAmount/2);
 		}
