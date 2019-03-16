@@ -24,7 +24,7 @@ port:8545
 
 networks: {
 
-development: {
+development: { //Ganache
 
 host: "localhost", //our network is running on localhost
 

@@ -10,8 +10,8 @@ contract demoContract{
         Cancelled, //Contract terminated from one of two sides
         Active, //Contract ongoing
         Completed, //Contract mutually terminated
-        Invalid //Payment failed
-    }
+        Invalid //Payment failed 
+   }
 
 	//Struct representing the contract
 	struct Contract{
@@ -44,6 +44,7 @@ contract demoContract{
 		}
 		else
 		{
+			covenant = Contract(provider, client, rootHash, collateralAmount, price, now, State.Invalid);
 			initMessage = "Initialization failed.";
 		}
 		
@@ -64,12 +65,19 @@ contract demoContract{
 		}
 		else 
 		{
-			tempCovenant = covenant;
-			infoMessage = "No Contract initialized.";
+			if (covenant.state == State.Invalid)
+			{
+				tempCovenant = covenant;
+				infoMessage = "Not enough funds.";
+			}
+			else{
+				tempCovenant = covenant;
+				infoMessage = "No Contract initialized.";
+			}
 		}
 	}
 
-	/* Function called by the provider to complete his payment. IN order for the payment to be successfuly
+	/* Function called by the provider to complete his payment. In order for the payment to be successfuly
 	** completed, there should be at least one month passed from the last payment or the creation of the contract.
 	** Additionally, the successfull completion of the payment, requires that the client has transferred the aggreed
 	** price to the contract's address. 
@@ -114,8 +122,7 @@ contract demoContract{
 
 	/* Function that terminates the contract. Half of the collateral amount specified in the
 	** contract is return to the not culpable party if there is one. If the termination is mutual,
-	** both parties take their Ether back. Finally, the contract is self destroyed and any remaining 
-	** Ether is burned.
+	** both parties take their Ether back. Finally, the contract is invalidated.
 	*/
 	function terminate(bytes32 culpable) 
 	public
@@ -138,7 +145,7 @@ contract demoContract{
 			address(covenant.client).transfer(covenant.collateralAmount/2);
 		}
 		invalidateContract();
-		address(0x0000000000000000000000000000000000000000).transfer(contractAddress.balance); //Burn contract's ether and delete struck entry representing the covenant.
+		address(0x0000000000000000000000000000000000000000).transfer(contractAddress.balance); //Burn contract's ether and delete struct entry representing the covenant.
 	}
 
 	/* Function that calculates the time (in seconds) passed
