@@ -14,12 +14,19 @@ contract executorContract{
 	*/
 	function init(address payable provider, address payable client, uint rootHash, uint collateralAmount, uint price)
 	public
+	payable
 	returns (bytes32 initMessage)
 	{
-		contracts[id] = new Contract(provider, client, rootHash, collateralAmount, price);
-		paymentTime[id] = now;
-		id++;
-		initMessage = "Initialization successfull.";
+		if (msg.value == collateralAmount*2){
+			contracts[id] = new Contract(provider, client, rootHash, collateralAmount, price);
+			paymentTime[id] = now;
+			id++;
+			initMessage = "Initialization successfull.";
+		}
+		else {
+			initMessage = "Insufficient or excessive amount";
+			revert();
+		}
 	}
 
 	/* Function that returns all the information about the contract,
@@ -73,20 +80,29 @@ contract executorContract{
 		{
 			if (timeDif(_id) >= 2629743) //Check if 1 month has passed since last payment or the creation of the contract
 			{
-				require(msg.value == contracts[_id].price());
-				uint providerBalance = address(contracts[_id].provider()).balance;
-				(contracts[_id].provider()).transfer(msg.value);
-		 		if (address(contracts[_id].provider()).balance >= providerBalance + contracts[_id].price()) paymentTime[_id] = now; //If the payment is successfull, set the payment time to now.
-		 		else {
+				if(msg.value == contracts[_id].price()){
+					uint providerBalance = address(contracts[_id].provider()).balance;
+					(contracts[_id].provider()).transfer(msg.value);
+					if (address(contracts[_id].provider()).balance >= providerBalance + contracts[_id].price()){
+						paymentTime[_id] = now; //If the payment is successfull, set the payment time to now.
+						paymentMessage = "Payment successfull.";
+					}
+					else {
+						contracts[_id].setState("Invalid");
+						paymentMessage = "Transaction failed";
+					}
+					
+				}
+				else{
 					contracts[_id].setState("Invalid");
-					return "Transaction failed";
-				}	 
+					paymentMessage = "Insufficient or excessive amount";
+					revert();
+				}
 		 	}
 			else
 			{
 				paymentMessage = "Payments are made every 1 month.";
 			}
-			paymentMessage = "Payment completed.";
 		}
 		else
 		{

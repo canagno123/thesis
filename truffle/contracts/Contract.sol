@@ -7,8 +7,8 @@ contract Contract{
 	uint public rootHash;
 	uint public collateralAmount; //collateralAmount is stored in wei (10^-19 eth)
 	uint public price; //price is stored in wei (10^-19 eth)
-	uint public startTime; //startTime is initiated to now in the init function and is refreshed every time a payment is made. It is caclulated in seconds since the last Epoch.
-	bytes32 public state; //state of the contract, taking values from the State enum
+	uint public startTime; //startTime is initiated to now in the init function. It is caclulated in seconds since the last Epoch.
+	bytes32 public state; //state of the contract
 
 	constructor(address payable _provider, address payable _client, uint _rootHash, uint _collateralAmount, uint _price)
 	public
