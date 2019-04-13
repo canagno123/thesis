@@ -9,15 +9,10 @@ library StorageProof {
     uint internal constant HASH_DIGEST_SIZE = 32;
 
     // Verifies a Merkle Tree Proof.
-    function verify(
-        bytes32 rootHash,
-        bytes memory leaf,
-        bytes32[] memory nodeHashes,
-        bool[] memory nodeOrientations
-    )
-        public
-        pure
-        returns (bool)
+    function verify(bytes32 rootHash, bytes memory leaf, bytes32[] memory nodeHashes, bool[] memory nodeOrientations)
+    public
+    pure
+    returns (bool)
     {
         if ((nodeHashes.length == 0) ||
             (nodeHashes.length != nodeOrientations.length)) {
