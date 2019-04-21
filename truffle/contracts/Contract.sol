@@ -8,7 +8,7 @@ contract Contract{
 	uint public collateralAmount; //collateralAmount is stored in wei (10^-19 eth)
 	uint public price; //price is stored in wei (10^-19 eth)
 	uint public startTime; //startTime is initiated to now in the init function. It is caclulated in seconds since the last Epoch.
-	uint8 public state; //state of the contract, 1 = Active, 2 = Invalid, 3 = Cancelled, 4 = Invalid.
+	uint8 public state; //state of the contract, 1 = Active, 2 = Invalid, 3 = Canceled, 4 = Invalid.
 
 	constructor(address payable[] memory _provider, address payable _client, uint _rootHash, uint _collateralAmount, uint _price)
 	public

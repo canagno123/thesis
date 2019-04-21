@@ -21,16 +21,12 @@ contract executorContract{
 			id++;
 			initMessage = "Initialization successfull.";
 		}
-		else if (msg.value < collateralAmount * 1 wei) return "";
 		else {
 			initMessage = "Insufficient or excessive amount";
 			revert();
 		}
 	}
 
-	/* Function that returns all the information about the contract,
-	** if one is initialized.
-	*/
 	function getContractInfo(uint _id)
 	public
 	view
@@ -67,15 +63,11 @@ contract executorContract{
 		}
 	}
 
-	/* Function called by the client to pay the specified price in the contract. The payment is being made to the contract, which then transfers the amount to
-	*  the provider. The contract needs to either be Active or Invalid, and 1 month must have passed since the last payment.
-	*/
 	function pay(uint _id)
 	public
 	payable
 	returns(bytes32 paymentMessage)
 	{
-
 		if (contracts[_id].state() == 1 || contracts[_id].state() == 2)
 		{
 			if (timeDif(_id) >= 2629743) //Check if 1 month has passed since last payment or the creation of the contract
@@ -93,6 +85,7 @@ contract executorContract{
 						else {
 							contracts[_id].setState(2);
 							paymentMessage = "Transaction failed";
+							revert();
 						}
 					}
 				}
@@ -105,20 +98,22 @@ contract executorContract{
 			else
 			{
 				paymentMessage = "Payments are made every 1 month.";
+				revert();
 			}
 		}
 		else
 		{
 			paymentMessage = "Contract is terminated.";
+			revert();
 		}
 	}
 
-	function terminate(uint _id, bytes32 culpable) 
+	function terminate(uint _id, bytes32 _culpable/*, bytes memory _leaf, bytes32[] memory _nodeHashes, bool[] memory _nodeOrientations*/) 
 	public
 	payable
 	returns(bytes32 terminationMessage)
 	{
-		if (culpable == "CLIENT"  && timeDif(_id) > 2629743) 
+		if (_culpable == "CLIENT"  && timeDif(_id) > 2629743) 
 		{
 			contracts[_id].setState(3);
 			address payable[] memory provs = contracts[_id].getProviders();
@@ -126,12 +121,12 @@ contract executorContract{
 				provs[i].transfer(contracts[_id].collateralAmount()/provs.length);
 			}
 		}
-		else if (culpable == "PROVIDER" /*&& verify(rootHash, leaf, nodeHashes, nodeOrientations)*/)
+		else if (_culpable == "PROVIDER" /*&& verify(contracts[_id].rootHash(), _leaf, _nodeHashes, _nodeOrientations)*/)
 		{
 			contracts[_id].setState(3);
 			address(contracts[_id].client()).transfer(contracts[_id].collateralAmount());
 		}
-		else if (culpable == "" && timeDif(_id) <= 1314871 /*&& verify(rootHash, leaf, nodeHashes, nodeOrientations)*/) 
+		else if (_culpable == "" && timeDif(_id) <= 1314871 /*&& verify(contracts[_id].rootHash(), _leaf, _nodeHashes, _nodeOrientations)*/) 
 		{
 			contracts[_id].setState(4);
 			address payable[] memory provs = contracts[_id].getProviders();
@@ -148,9 +143,6 @@ contract executorContract{
 		return "OK";
 	}
 
-	/* Function that calculates the time (in seconds) passed
-	** since the last payment time for the specified contract.
-	*/
 	function timeDif(uint _id)
 	public
 	view 
