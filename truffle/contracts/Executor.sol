@@ -1,15 +1,21 @@
 pragma solidity ^0.5.0;
-//pragma experimental ABIEncoderV2; //Need to be specified so that functions can return structs. Not necessary, will be removed after testing phase.
 import "./Contract.sol";
 import "./storage-proof.sol";
 
 contract executorContract{
 
-	uint private id = 0; //May need id for multiple contracts between multiple parties
+	//Data Structures and id counter
+	uint private id = 0;
 	mapping(uint => Contract) public contracts;
 	mapping(uint => uint) public paymentTime;
+	mapping(uint => mapping(address => uint)) verifications;
 
-
+	//State Constants
+	uint8 constant public ACTIVE = 1;
+	uint8 constant public INVALID = 2;
+	uint8 constant public CANCELED = 3;
+	uint8 constant public COMPLETED = 4;
+	
 	function init(address payable[] memory provider, address payable client, uint rootHash, uint collateralAmount, uint price)
 	public
 	payable
@@ -17,6 +23,9 @@ contract executorContract{
 	{
 		if (msg.value == collateralAmount * 1 wei){
 			contracts[id] = new Contract(provider, client, rootHash, collateralAmount, price);
+			for (uint i = 0; i < provider.length; i++){
+				verifications[id][provider[i]] = now; 	
+			}
 			paymentTime[id] = now;
 			id++;
 			initMessage = "Initialization successfull.";
@@ -32,32 +41,32 @@ contract executorContract{
 	view
 	returns(address payable[] memory tempProvider,uint tempPrice, bytes32 infoMessage, uint tempCollateral, uint tempTime, uint temppTime, uint8 tempState)
 	{
-		if (contracts[_id].client() != 0x0000000000000000000000000000000000000000){
+		if (contracts[_id].getClient() != 0x0000000000000000000000000000000000000000){
 			tempProvider = contracts[_id].getProviders();
-			tempTime = contracts[_id].startTime();
-			tempPrice = contracts[_id].price();
+			tempTime = contracts[_id].getStartTime();
+			tempPrice = contracts[_id].getPrice();
 			temppTime = paymentTime[_id];
-			tempCollateral = contracts[_id].collateralAmount();
-			tempState = contracts[_id].state();
+			tempCollateral = contracts[_id].getCollateralAmount();
+			tempState = contracts[_id].getState();
 			infoMessage = "OK";
 		}
 		else 
 		{
-			if (contracts[_id].state() == 2)
+			if (contracts[_id].getState() == INVALID)
 			{
 				tempProvider = contracts[_id].getProviders();
-				tempTime = contracts[_id].startTime();
-				tempPrice = contracts[_id].price();
+				tempTime = contracts[_id].getStartTime();
+				tempPrice = contracts[_id].getPrice();
 				temppTime = paymentTime[_id];
-				tempState = contracts[_id].state();
+				tempState = contracts[_id].getState();
 				infoMessage = "Not enough funds.";
 			}
 			else{
 				tempProvider = contracts[_id].getProviders();
-				tempTime = contracts[_id].startTime();
-				tempPrice = contracts[_id].price();
+				tempTime = contracts[_id].getStartTime();
+				tempPrice = contracts[_id].getPrice();
 				temppTime = paymentTime[_id];
-				tempState = contracts[_id].state();
+				tempState = contracts[_id].getState();
 				infoMessage = "No Contract initialized.";
 			}
 		}
@@ -68,29 +77,29 @@ contract executorContract{
 	payable
 	returns(bytes32 paymentMessage)
 	{
-		if (contracts[_id].state() == 1 || contracts[_id].state() == 2)
+		if (contracts[_id].getState() == ACTIVE || contracts[_id].getState() == INVALID)
 		{
 			if (timeDif(_id) >= 2629743) //Check if 1 month has passed since last payment or the creation of the contract
 			{
-				if(msg.value == contracts[_id].price() * 1 wei){
+				if(msg.value == contracts[_id].getPrice() * 1 wei){
 					address payable[] memory provs = contracts[_id].getProviders();
 					for (uint i=0; i < provs.length; i++){
 						address payable currProv = provs[i];
 						uint providerBalance = currProv.balance;
 						currProv.transfer(msg.value / provs.length);
-						if (currProv.balance >= providerBalance + (contracts[_id].price() / provs.length)){
+						if (currProv.balance >= providerBalance + (contracts[_id].getPrice() / provs.length)){
 							paymentTime[_id] = now; //If the payment is successfull, set the payment time to now.
 							paymentMessage = "Payment successfull.";
 						}
 						else {
-							contracts[_id].setState(2);
+							contracts[_id].setState(INVALID);
 							paymentMessage = "Transaction failed";
 							revert();
 						}
 					}
 				}
 				else{
-					contracts[_id].setState(2);
+					contracts[_id].setState(INVALID);
 					paymentMessage = "Insufficient or excessive amount";
 					revert();
 				}
@@ -108,39 +117,87 @@ contract executorContract{
 		}
 	}
 
-	function terminate(uint _id, bytes32 _culpable/*, bytes memory _leaf, bytes32[] memory _nodeHashes, bool[] memory _nodeOrientations*/) 
+	function getVerification(uint _id, address payable _provider/*, bytes memory _leaf, bytes32[] memory _nodeHashes, bool[] memory _nodeOrientations*/)
+	public
+	returns(bytes32 verificationMessage)
+	{
+		if (/* && verify(contracts[_id].rootHash(), _leaf, _nodeHashes, _nodeOrientations)*/ true){
+			verifications[_id][_provider] = now;
+			verificationMessage = "OK";
+		}
+		else{
+			terminateCulpProvider(_id, _provider/*, bytes memory _leaf, bytes32[] memory _nodeHashes, bool[] memory _nodeOrientations*/);
+			verificationMessage = "NOK";
+		}
+	}
+
+	function terminateCulpClient(uint _id/*, bytes memory _leaf, bytes32[] memory _nodeHashes, bool[] memory _nodeOrientations*/) 
 	public
 	payable
 	returns(bytes32 terminationMessage)
 	{
-		if (_culpable == "CLIENT"  && timeDif(_id) > 2629743) 
+		if (timeDif(_id) > 2629743) 
 		{
-			contracts[_id].setState(3);
+			contracts[_id].setState(CANCELED);
 			address payable[] memory provs = contracts[_id].getProviders();
 			for (uint i = 0; i < provs.length; i++){
-				provs[i].transfer(contracts[_id].collateralAmount()/provs.length);
+				provs[i].transfer(contracts[_id].getCollateralAmount()/provs.length);
 			}
-		}
-		else if (_culpable == "PROVIDER" /*&& verify(contracts[_id].rootHash(), _leaf, _nodeHashes, _nodeOrientations)*/)
-		{
-			contracts[_id].setState(3);
-			address(contracts[_id].client()).transfer(contracts[_id].collateralAmount());
-		}
-		else if (_culpable == "" && timeDif(_id) <= 1314871 /*&& verify(contracts[_id].rootHash(), _leaf, _nodeHashes, _nodeOrientations)*/) 
-		{
-			contracts[_id].setState(4);
-			address payable[] memory provs = contracts[_id].getProviders();
-			for (uint i = 0; i < provs.length; i++){
-				provs[i].transfer(contracts[_id].collateralAmount()/(provs.length + 1));
-			}
-			address(contracts[_id].client()).transfer(contracts[_id].collateralAmount()/(provs.length + 1));
 		}
 		else
 		{
-			return "NOK";
+			terminationMessage = "NOK";
 		}
 		invalidateContract(_id);
 		return "OK";
+	}
+
+	function terminateCulpProvider(uint _id, address payable _provider/*, bytes memory _leaf, bytes32[] memory _nodeHashes, bool[] memory _nodeOrientations*/) 
+	public
+	payable
+	returns(bytes32 terminationMessage)
+	{
+		if (/* && verify(contracts[_id].rootHash(), _leaf, _nodeHashes, _nodeOrientations)*/ true){
+			terminationMessage = "NOK";
+		}
+		else{
+			contracts[_id].setState(CANCELED);
+			address payable[] memory provs = contracts[_id].getProviders();
+			for (uint i = 0; i < provs.length; i++){
+				if (provs[i] != _provider){	
+					provs[i].transfer(contracts[_id].getCollateralAmount()/(provs.length));
+				}
+				address(contracts[_id].getClient()).transfer(contracts[_id].getCollateralAmount()/(provs.length));
+			}
+			invalidateContract(_id);
+			return "OK";
+		}
+	}	
+
+	function terminateMutual(uint _id/*, bytes memory _leaf, bytes32[] memory _nodeHashes, bool[] memory _nodeOrientations*/) 
+	public
+	payable
+	returns(bytes32 terminationMessage)
+	{
+		if (timeDif(_id) <= 1314871){
+			contracts[_id].setState(COMPLETED);
+			address payable[] memory provs = contracts[_id].getProviders();
+			uint splitCount = provs.length + 1;
+			for (uint i = 0; i < provs.length; i++){
+				if (/* verify(contracts[_id].rootHash(), _leaf, _nodeHashes, _nodeOrientations)*/true){
+					provs[i].transfer(contracts[_id].getCollateralAmount()/splitCount);
+				}
+				else{
+					splitCount--;
+				}
+			}
+			address(contracts[_id].getClient()).transfer(contracts[_id].getCollateralAmount()/splitCount);
+			terminationMessage = "OK";
+			invalidateContract(_id);
+		}
+		else {
+			return "NOK";
+		}
 	}
 
 	function timeDif(uint _id)
@@ -155,13 +212,6 @@ contract executorContract{
 	function invalidateContract(uint _id)
 	public
 	{
-		address payable[] memory emptyArray;
-		contracts[_id].setProvider(emptyArray);
-		contracts[_id].setClient(0x0000000000000000000000000000000000000000);
-		contracts[_id].setRootHash(0);
-		contracts[_id].setPrice(0);
-		contracts[_id].setCollateralAmount(0);
-		contracts[_id].setStartTime(0);
 		delete contracts[_id];
 	}
 
@@ -169,5 +219,4 @@ contract executorContract{
 	function () external payable {
 
 	}
-
 }
