@@ -4,7 +4,7 @@ contract Contract{
 
 	address payable[] private provider;
 	address payable private client;
-	uint private rootHash;
+	bytes32 private rootHash;
 	uint private collateralAmount; //collateralAmount is stored in wei (10^-19 eth)
 	uint private price; //price is stored in wei (10^-19 eth)
 	uint private startTime; //startTime is initiated to now in the init function. It is caclulated in seconds since the last Epoch.
@@ -15,7 +15,7 @@ contract Contract{
 	uint8 constant public CANCELED = 3;
 	uint8 constant public COMPLETED = 4;
 
-	constructor(address payable[] memory _provider, address payable _client, uint _rootHash, uint _collateralAmount, uint _price)
+	constructor(address payable[] memory _provider, address payable _client, bytes32 _rootHash, uint _collateralAmount, uint _price)
 	public
 	{
 		provider = _provider;
@@ -27,13 +27,13 @@ contract Contract{
 		state = ACTIVE;
 	}
 
-    function setProvider (address payable[] memory _provider) 
+    function setProvider (address payable[] memory _provider)
     public
     {
         provider = _provider;
     }
 
-    function getProviders () 
+    function getProviders ()
     public
     view
     returns (address  payable[] memory)
@@ -41,13 +41,13 @@ contract Contract{
         return provider;
     }
 
-    function setClient (address payable _client) 
+    function setClient (address payable _client)
     public
     {
         client = _client;
     }
 
-    function getClient () 
+    function getClient ()
     public
     view
     returns (address payable _client)
@@ -55,27 +55,27 @@ contract Contract{
         return client;
     }
 
-    function setRootHash (uint _rootHash) 
+    function setRootHash (bytes32 _rootHash)
     public
     {
         rootHash = _rootHash;
     }
 
-    function getRootHash () 
+    function getRootHash ()
     public
     view
-    returns (uint _rootHash)
+    returns (bytes32 _rootHash)
     {
         return rootHash;
     }
 
-    function setCollateralAmount (uint _collateralAmount) 
+    function setCollateralAmount (uint _collateralAmount)
     public
     {
         collateralAmount = _collateralAmount;
     }
 
-    function getCollateralAmount () 
+    function getCollateralAmount ()
     public
     view
     returns (uint _collateralAmount)
@@ -83,13 +83,13 @@ contract Contract{
         return collateralAmount;
     }
 
-    function setPrice (uint _price) 
+    function setPrice (uint _price)
     public
     {
         price = _price;
     }
 
-    function getPrice () 
+    function getPrice ()
     public
     view
     returns (uint _price)
@@ -97,13 +97,13 @@ contract Contract{
         return price;
     }
 
-    function setState (uint8 _state) 
+    function setState (uint8 _state)
     public
     {
         state = _state;
     }
 
-    function getState () 
+    function getState ()
     public
     view
     returns (uint8 _state)
@@ -111,13 +111,13 @@ contract Contract{
         return state;
     }
 
-    function setStartTime (uint _time) 
+    function setStartTime (uint _time)
     public
     {
         startTime = _time;
     }
 
-    function getStartTime () 
+    function getStartTime ()
     public
     view
     returns (uint _startTime)
