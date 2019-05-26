@@ -16,7 +16,7 @@ contract contractExecutor{
 	uint8 constant public CANCELED = 3;
 	uint8 constant public COMPLETED = 4;
 
-	function init(address payable[] memory provider, address payable client, bytes32 rootHash, uint collateralAmount, uint price)
+	function initContract(address payable[] memory provider, address payable client, bytes32 rootHash, uint collateralAmount, uint price)
 	public
 	payable
 	onlyIfCollateral(collateralAmount)
@@ -61,7 +61,8 @@ contract contractExecutor{
 				tempState = contracts[_id].getState();
 				infoMessage = "Not enough funds.";
 			}
-			else{
+			else
+			{
 				tempProvider = contracts[_id].getProviders();
 				tempTime = contracts[_id].getStartTime();
 				tempPrice = contracts[_id].getPrice();
@@ -75,6 +76,7 @@ contract contractExecutor{
 	function pay(uint _id)
 	public
 	payable
+	onlyClient(_id)
 	onlyActiveOrInvalid(_id)
 	onlyAfterOneMonth(_id)
 	onlyRightPrice(_id)
@@ -87,7 +89,7 @@ contract contractExecutor{
 			uint providerBalance = currProv.balance;
 			currProv.transfer(msg.value / provs.length);
 			if (currProv.balance >= providerBalance + (contracts[_id].getPrice() / provs.length)){
-					paymentTime[_id] = now; //If the payment is successfull, set the payment time to now.
+					paymentTime[_id] = now;//If the payment is successfull, set the payment time to now.
 					paymentMessage = "Payment successfull.";
 			}
 			else {
@@ -185,7 +187,7 @@ contract contractExecutor{
 		delete contracts[_id];
 	}
 
-	// Function that makes the contract able to accept payments
+	//Function that makes the contract able to accept payments
 	function () external payable {
 
 	}
@@ -215,12 +217,17 @@ contract contractExecutor{
 		_;
 	}
 	modifier onlyMoreThanOneMonth(uint _id){
-		if (timeDif(_id) <= 2629743) revert("Contract can be terminated with the client culpable only if more than one month has passed since last payment.");
+		if (timeDif(_id) <= 2629743)
+			revert("Contract can be terminated with the client culpable only if more than one month has passed since last payment.");
 		_;
 	}
 	modifier onlyNotVerified(uint _id, bytes memory _leaf, bytes32[] memory _nodeHashes, bool[] memory _nodeOrientations){
 		if (StorageProof.verify(contracts[_id].getRootHash(), _leaf, _nodeHashes, _nodeOrientations)) revert("Merkle Proof was verified.");
 		_;
+	}
+	modifier onlyClient(uint _id){
+		if (msg.sender != contracts[_id].getClient()) revert("Only the client can pay the contract.");
+        _;
 	}
 
 }

@@ -88,7 +88,7 @@ contract auctionExecutor{
         return "Auction completed";
     }
 
-	// Function that makes the contract able to accept payments
+	//Function that makes the contract able to accept payments
 	function () external payable {
 
 	}
