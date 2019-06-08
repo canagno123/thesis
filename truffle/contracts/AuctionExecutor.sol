@@ -1,15 +1,23 @@
 pragma solidity ^0.5.0;
 import "./Auction.sol";
+import "./ProviderRating.sol";
 
 contract auctionExecutor{
 
 	//Data Structures and id counter
 	uint private id = 0;
 	mapping(uint => Auction) public auctions;
+    ProviderRating ratings;
 
     //Status Constants
     uint8 constant public ONGOING = 1;
 	uint8 constant public COMPLETED = 2;
+
+    constructor (ProviderRating _rating)
+    public
+    {
+        ratings = _rating;
+    }
 
 	function initAuction(address payable _client, uint8 _providersNumber)
 	public
@@ -42,27 +50,41 @@ contract auctionExecutor{
 	payable
     onlyOngoing(_id)
     onlyNotOwner(_id)
+    onlyOverZeroEth()
+    notBlackListed()
 	returns(bytes32 bidMessage)
 	{
-        if (msg.value > 0){
-            address payable[] memory provs = auctions[_id].getProvidersList();
-            uint[] memory prices = auctions[_id].getProvidersPriceList();
-            uint8 desiredNumber = auctions[_id].getProvidersNumber();
-            if (prices.length < desiredNumber){
-                auctions[_id].addProvider(msg.sender);
-                auctions[_id].addProvidersPrice(msg.value);
-                return "Success";
+        if (!ratings.providerExists(msg.sender))
+            ratings.addProvider(msg.sender);
+        address payable[] memory provs = auctions[_id].getProvidersList();
+        uint[] memory prices = auctions[_id].getProvidersPriceList();
+        uint8 desiredNumber = auctions[_id].getProvidersNumber();
+        if (prices.length < desiredNumber){
+            auctions[_id].addProvider(msg.sender);
+            auctions[_id].addProvidersPrice(msg.value);
+            return "Success";
+        }
+        uint max = 0;
+        uint8 maxi = 0;
+        for (uint8 i = 0; i < prices.length; i++)
+        {
+            if(prices[i] >= max){
+                max = prices[i];
+                maxi = i;
             }
-            uint max = 0;
-            uint8 maxi = 0;
-            for (uint8 i = 0; i < prices.length; i++)
+        }
+        if (msg.value < max ){
+            provs[maxi].transfer(prices[maxi]);
+            auctions[_id].deleteProvider(maxi);
+            auctions[_id].deleteProvidersPrice(maxi);
+            auctions[_id].addProvider(msg.sender);
+            auctions[_id].addProvidersPrice(msg.value);
+            return "Provider list altered.";
+        }
+        else if (msg.value == max)
+        {
+            if (ratings.getRating(provs[maxi]) < ratings.getRating(msg.sender))
             {
-                if(prices[i] >= max){
-                    max = prices[i];
-                    maxi = i;
-                }
-            }
-            if (msg.value < max ){
                 provs[maxi].transfer(prices[maxi]);
                 auctions[_id].deleteProvider(maxi);
                 auctions[_id].deleteProvidersPrice(maxi);
@@ -70,12 +92,10 @@ contract auctionExecutor{
                 auctions[_id].addProvidersPrice(msg.value);
                 return "Provider list altered.";
             }
-            else {
-                revert("Bid not high enough");
-            }
         }
-        else if (msg.value == 0) revert("Payments should be over 0 ETH.");
-
+        else {
+            revert("Bid not high enough");
+        }
 	}
 
     function completeAuction(uint _id)
@@ -104,6 +124,18 @@ contract auctionExecutor{
     }
     modifier onlyOwner(uint __id) {
         if (msg.sender != auctions[__id].getClient()) revert("Only the client can complete the auction.");
+        _;
+    }
+    modifier onlyOverZeroEth(){
+        if (msg.value <= 0) revert("Payments should be over 0 ETH.");
+        _;
+    }
+    modifier bidderNotBlackListed(){
+        if (msg.value <= 0) revert("Payments should be over 0 ETH.");
+        _;
+    }
+    modifier notBlackListed(){
+        if (ratings.providerBlackListed(msg.sender)) revert("Bidder is blacklisted.");
         _;
     }
 }

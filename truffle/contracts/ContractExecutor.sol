@@ -1,6 +1,8 @@
 pragma solidity ^0.5.0;
 import "./Contract.sol";
 import "./storage-proof.sol";
+import "./ProviderRating.sol";
+
 
 contract contractExecutor{
 
@@ -9,6 +11,7 @@ contract contractExecutor{
 	mapping(uint => Contract) public contracts;
 	mapping(uint => uint) public paymentTime;
 	mapping(uint => mapping(address => uint)) verifications;
+    ProviderRating ratings;
 
 	//State Constants
 	uint8 constant public ACTIVE = 1;
@@ -16,24 +19,29 @@ contract contractExecutor{
 	uint8 constant public CANCELED = 3;
 	uint8 constant public COMPLETED = 4;
 
+	constructor (ProviderRating _rating)
+    public
+    {
+        ratings = _rating;
+    }
+
 	function initContract(address payable[] memory provider, address payable client, bytes32 rootHash, uint collateralAmount, uint price)
 	public
 	payable
 	onlyIfCollateral(collateralAmount)
 	returns (bytes32 initMessage)
 	{
-		if (msg.value == collateralAmount * 1 wei){
 			contracts[id] = new Contract(provider, client, rootHash, collateralAmount, price);
 			for (uint i = 0; i < provider.length; i++){
+				if (ratings.providerBlackListed(provider[i]))
+				{
+					revert("One of the providers is blacklisted.");
+				}
 				verifications[id][provider[i]] = now;
 			}
 			paymentTime[id] = now;
 			id++;
 			initMessage = "Initialization successfull.";
-		}
-		else {
-			revert("Insufficient or excessive amount");
-		}
 	}
 
 	function getContractInfo(uint _id)

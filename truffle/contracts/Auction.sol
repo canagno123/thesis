@@ -45,7 +45,7 @@ contract Auction{
     function getProvidersList ()
     public
     view
-    returns (address  payable[] memory _providersList)
+    returns (address payable[] memory _providersList)
     {
         return providersList;
     }
