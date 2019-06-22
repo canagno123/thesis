@@ -31,6 +31,8 @@ host: "localhost", //our network is running on localhost
 port: 7545, // port where your blockchain is running
 
 network_id: "5777",
+
+from: "0xfbC6D54b3C60B9717123E7e52A33646aa07918F8"
 }
 }
 

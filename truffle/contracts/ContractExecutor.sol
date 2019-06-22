@@ -47,10 +47,11 @@ contract contractExecutor{
 	function getContractInfo(uint _id)
 	public
 	view
-	returns(address payable[] memory tempProvider,uint tempPrice, bytes32 infoMessage, uint tempCollateral, uint tempTime, uint temppTime, uint8 tempState)
+	returns(address payable[] memory tempProvider, address payable tempClient, uint tempPrice, bytes32 infoMessage, uint tempCollateral, uint tempTime, uint temppTime, uint8 tempState)
 	{
 		if (contracts[_id].getClient() != 0x0000000000000000000000000000000000000000){
 			tempProvider = contracts[_id].getProviders();
+			tempClient = contracts[_id].getClient();
 			tempTime = contracts[_id].getStartTime();
 			tempPrice = contracts[_id].getPrice();
 			temppTime = paymentTime[_id];
@@ -63,6 +64,7 @@ contract contractExecutor{
 			if (contracts[_id].getState() == INVALID)
 			{
 				tempProvider = contracts[_id].getProviders();
+				tempClient = contracts[_id].getClient();
 				tempTime = contracts[_id].getStartTime();
 				tempPrice = contracts[_id].getPrice();
 				temppTime = paymentTime[_id];
@@ -72,6 +74,7 @@ contract contractExecutor{
 			else
 			{
 				tempProvider = contracts[_id].getProviders();
+				tempClient = contracts[_id].getClient();
 				tempTime = contracts[_id].getStartTime();
 				tempPrice = contracts[_id].getPrice();
 				temppTime = paymentTime[_id];
@@ -107,19 +110,19 @@ contract contractExecutor{
 		}
 	}
 
-	function getVerification(uint _id, address payable _provider, bytes memory _leaf, bytes32[] memory _nodeHashes, bool[] memory _nodeOrientations)
-	public
-	returns(bytes32 verificationMessage)
-	{
-		if (StorageProof.verify(contracts[_id].getRootHash(), _leaf, _nodeHashes, _nodeOrientations)){
-			verifications[_id][_provider] = now;
-			verificationMessage = "OK";
-		}
-		else{
-			terminateCulpProvider(_id, _provider,  _leaf, _nodeHashes, _nodeOrientations);
-			verificationMessage = "NOK";
-		}
-	}
+	// function getVerification(uint _id, address payable _provider, bytes memory _leaf, bytes32[] memory _nodeHashes, bool[] memory _nodeOrientations)
+	// public
+	// returns(bytes32 verificationMessage)
+	// {
+	// 	if (StorageProof.verify(contracts[_id].getRootHash(), _leaf, _nodeHashes, _nodeOrientations)){
+	// 		verifications[_id][_provider] = now;
+	// 		verificationMessage = "OK";
+	// 	}
+	// 	else{
+	// 		terminateCulpProvider(_id, _provider,  _leaf, _nodeHashes, _nodeOrientations);
+	// 		verificationMessage = "NOK";
+	// 	}
+	// }
 
 	function terminateCulpClient(uint _id)
 	public
@@ -139,11 +142,10 @@ contract contractExecutor{
 		return "OK";
 	}
 
-	function terminateCulpProvider(uint _id, address payable _provider, bytes memory _leaf,
-								   bytes32[] memory _nodeHashes, bool[] memory _nodeOrientations)
+	function terminateCulpProvider(uint _id, address payable _provider)
 	public
 	payable
-	onlyNotVerified(_id, _leaf, _nodeHashes, _nodeOrientations)
+	//onlyNotVerified(_id, _leaf, _nodeHashes, _nodeOrientations)
 	returns(bytes32 terminationMessage)
 	{
 		contracts[_id].setState(CANCELED);
@@ -163,7 +165,7 @@ contract contractExecutor{
 		return "OK";
 	}
 
-	function terminateMutual(uint _id, bytes memory _leaf, bytes32[] memory _nodeHashes, bool[] memory _nodeOrientations)
+	function terminateMutual(uint _id)
 	public
 	payable
 	onlyLessThanHalfMonth(_id)
@@ -174,7 +176,7 @@ contract contractExecutor{
 		uint coll = contracts[_id].getCollateralAmount();
 		uint splitCount = provs.length + 1;
 		for (uint i = 0; i < provs.length; i++){
-			if (StorageProof.verify(contracts[_id].getRootHash(), _leaf, _nodeHashes, _nodeOrientations)){
+			if (true){
 				provs[i].transfer(coll / splitCount);
 				//Level up provider's rating
 				ratings.levelUpRating(provs[i]);
@@ -216,7 +218,7 @@ contract contractExecutor{
         _;
 	}
 	modifier onlyAfterOneMonth(uint _id){
-		if (timeDif(_id) < 2629743) revert("Payments are made every 1 month.");
+		if (timeDif(_id) < 30) revert("Payments are made every 1 month.");
         _;
 	}
 	modifier onlyRightPrice(uint _id){
@@ -231,7 +233,7 @@ contract contractExecutor{
 		_;
 	}
 	modifier onlyLessThanHalfMonth(uint _id){
-		if (timeDif(_id) > 1314871) revert("Contract can be mutually terminated before hald a month has passed since last payment.");
+		if (timeDif(_id) > 15) revert("Contract can be mutually terminated before hald a month has passed since last payment.");
 		_;
 	}
 	modifier onlyMoreThanOneMonth(uint _id){

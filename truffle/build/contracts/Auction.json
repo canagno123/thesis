@@ -982,7 +982,7 @@
                       "name": "now",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2245,
+                      "referencedDeclaration": 2195,
                       "src": "803:3:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -3633,7 +3633,7 @@
                       "name": "now",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 2245,
+                      "referencedDeclaration": 2195,
                       "src": "803:3:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -5634,12 +5634,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0xe88FFB8a24F4Cb69473e5fD6D2158FB53b2F5D9f",
-      "transactionHash": "0xcd5ee064edf811845edb31fc53e636cd48f25a3e6b4ac81288c61bd72fbb570f"
+      "address": "0x89dB696E5b61428e94432B61fDc8186072F439cD",
+      "transactionHash": "0xdbd008d40d8257eab308074ee9d37d666e2aebd4f02427efe18bbc73063348ed"
     }
   },
   "schemaVersion": "3.0.1",
-  "updatedAt": "2019-06-08T14:59:14.745Z",
+  "updatedAt": "2019-06-22T14:04:16.492Z",
   "devdoc": {
     "methods": {}
   },
