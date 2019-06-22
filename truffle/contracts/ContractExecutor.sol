@@ -131,6 +131,8 @@ contract contractExecutor{
 		address payable[] memory provs = contracts[_id].getProviders();
 		uint coll = contracts[_id].getCollateralAmount();
 		for (uint i = 0; i < provs.length; i++){
+			//Level up the providers' rating
+			ratings.levelUpRating(provs[i]);
 			provs[i].transfer(coll / provs.length);
 		}
 		invalidateContract(_id);
@@ -147,8 +149,12 @@ contract contractExecutor{
 		contracts[_id].setState(CANCELED);
 		address payable[] memory provs = contracts[_id].getProviders();
 		uint coll = contracts[_id].getCollateralAmount();
+		//Level down culpable provider's rating
+		ratings.levelDownRating(_provider);
 		for (uint i = 0; i < provs.length; i++){
 			if (provs[i] != _provider){
+				//Level up the rest of the providers' rating
+				ratings.levelUpRating(provs[i]);
 				provs[i].transfer(coll / (provs.length));
 			}
 			address(contracts[_id].getClient()).transfer(coll / (provs.length));
@@ -170,8 +176,12 @@ contract contractExecutor{
 		for (uint i = 0; i < provs.length; i++){
 			if (StorageProof.verify(contracts[_id].getRootHash(), _leaf, _nodeHashes, _nodeOrientations)){
 				provs[i].transfer(coll / splitCount);
+				//Level up provider's rating
+				ratings.levelUpRating(provs[i]);
 			}
 			else{
+				//Level down provider's rating
+				ratings.levelDownRating(provs[i]);
 				splitCount--;
 			}
 		}

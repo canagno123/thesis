@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 
 contract ProviderRating{
-
+ 
 	mapping(address => uint8) private ratings;
     mapping(address => uint8) private blackList;
 
@@ -15,7 +15,7 @@ contract ProviderRating{
 	{
         if (!providerExists(_provider) && !providerBlackListed(_provider))
         {
-		    ratings[_provider] = 3;
+		    ratings[_provider] = 2;
             return "OK";
         }
         else if (providerExists(_provider))
@@ -43,7 +43,7 @@ contract ProviderRating{
     function levelUpRating (address payable _provider)
     public
     {
-        if (ratings[_provider] < 5)
+        if (ratings[_provider] < 10)
             ratings[_provider]++;
     }
 
