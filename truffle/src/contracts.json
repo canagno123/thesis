@@ -1,0 +1,26 @@
+[
+  {
+    "id": 0,
+    "client": "0xfbC6D54b3C60B9717123E7e52A33646aa07918F8",
+    "picture": "images/scottish-terrier.jpeg",
+    "age": 3,
+    "breed": "Scottish Terrier",
+    "location": "Lisco, Alabama"
+  },
+  {
+    "id": 1,
+    "client": "Gina",
+    "picture": "images/scottish-terrier.jpeg",
+    "age": 3,
+    "breed": "Scottish Terrier",
+    "location": "Tooleville, West Virginia"
+  },
+  {
+    "id": 2,
+    "client": "Collins",
+    "picture": "images/french-bulldog.jpeg",
+    "age": 2,
+    "breed": "French Bulldog",
+    "location": "Freeburn, Idaho"
+  }
+]

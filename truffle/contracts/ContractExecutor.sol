@@ -47,7 +47,7 @@ contract contractExecutor{
 	function getContractInfo(uint _id)
 	public
 	view
-	returns(address payable[] memory tempProvider, address payable tempClient, uint tempPrice, bytes32 infoMessage, uint tempCollateral, uint tempTime, uint temppTime, uint8 tempState)
+	returns(address payable[] memory tempProvider, address payable tempClient, uint tempPrice, bytes32 infoMessage, uint tempCollateral, uint tempTime, uint temppTime, bytes32 tempState)
 	{
 		if (contracts[_id].getClient() != 0x0000000000000000000000000000000000000000){
 			tempProvider = contracts[_id].getProviders();
@@ -56,7 +56,7 @@ contract contractExecutor{
 			tempPrice = contracts[_id].getPrice();
 			temppTime = paymentTime[_id];
 			tempCollateral = contracts[_id].getCollateralAmount();
-			tempState = contracts[_id].getState();
+			tempState = returnStringStatus(contracts[_id].getState());
 			infoMessage = "OK";
 		}
 		else
@@ -68,7 +68,7 @@ contract contractExecutor{
 				tempTime = contracts[_id].getStartTime();
 				tempPrice = contracts[_id].getPrice();
 				temppTime = paymentTime[_id];
-				tempState = contracts[_id].getState();
+				tempState = returnStringStatus(contracts[_id].getState());
 				infoMessage = "Not enough funds.";
 			}
 			else
@@ -78,7 +78,7 @@ contract contractExecutor{
 				tempTime = contracts[_id].getStartTime();
 				tempPrice = contracts[_id].getPrice();
 				temppTime = paymentTime[_id];
-				tempState = contracts[_id].getState();
+				tempState = returnStringStatus(contracts[_id].getState());
 				infoMessage = "No Contract initialized.";
 			}
 		}
@@ -204,7 +204,7 @@ contract contractExecutor{
 	function invalidateContract(uint _id)
 	public
 	{
-		delete contracts[_id];
+		contracts[_id].setClient(0x0000000000000000000000000000000000000000);
 	}
 
 	//Function that makes the contract able to accept payments
@@ -248,6 +248,37 @@ contract contractExecutor{
 	modifier onlyClient(uint _id){
 		if (msg.sender != contracts[_id].getClient()) revert("Only the client can pay the contract.");
         _;
+	}
+
+	function returnStringStatus(uint8 _id)
+    public
+    pure
+    returns(bytes32)
+    {
+        if (_id == 1)
+            return "Active";
+        else if (_id == 2)
+            return "Invalid";
+        else if (_id == 3)
+            return "Cancelled";
+		else if (_id == 4)
+            return "Completed";
+		else
+            return "Status id is not valid";
+    }
+
+	function getContractStatuses()
+	public
+	view
+	returns(uint8[20] memory)
+	{
+		uint8[20] memory returnList;
+		for (uint i = 0; i < 20; i++){
+			if (i > id - 1)
+				break;
+			returnList[i] = contracts[i].getState();
+		}
+		return returnList;
 	}
 
 }

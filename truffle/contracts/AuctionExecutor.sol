@@ -19,21 +19,21 @@ contract auctionExecutor{
         ratings = _rating;
     }
 
-	function initAuction(address payable _client, uint8 _providersNumber)
+	function initAuction(uint8 _providersNumber)
 	public
 	payable
 	returns (bytes32 initMessage)
 	{
-        auctions[id] = new Auction(_client, _providersNumber);
+        auctions[id] = new Auction(msg.sender, _providersNumber);
 		id++;
 		return "Initialization successfull.";
 	}
 
 	function getAuctionInfo(uint _id)
 	public
-	view
+    view
 	returns(address payable[] memory tempProvider, address payable tempClient, uint[] memory tempPrice, uint8 tempProvidersNumber, uint tempStartTime,
-            uint tempEndTime, uint8 tempStatus, bytes32 infoMessage)
+            uint tempEndTime, bytes32 tempStatus, bytes32 infoMessage)
 	{
 		tempProvider = auctions[_id].getProvidersList();
         tempClient = auctions[_id].getClient();
@@ -41,7 +41,7 @@ contract auctionExecutor{
 		tempPrice = auctions[_id].getProvidersPriceList();
 		tempEndTime = auctions[_id].getEndTime();
 		tempProvidersNumber = auctions[_id].getProvidersNumber();
-		tempStatus = auctions[_id].getStatus();
+		tempStatus = returnStringStatus(auctions[_id].getStatus());
 		infoMessage = "OK";
 	}
 
@@ -52,6 +52,7 @@ contract auctionExecutor{
     onlyNotOwner(_id)
     onlyOverZeroEth()
     notBlackListed()
+    notExists(_id)
 	returns(bytes32 bidMessage)
 	{
         if (!ratings.providerExists(msg.sender))
@@ -137,5 +138,28 @@ contract auctionExecutor{
     modifier notBlackListed(){
         if (ratings.providerBlackListed(msg.sender)) revert("Bidder is blacklisted.");
         _;
+    }
+    modifier notExists(uint _id){
+        address payable[] memory provs = auctions[_id].getProvidersList();
+        for (uint8 i = 0; i < provs.length; i++)
+        {
+            if(provs[i] == msg.sender){
+                revert("Bidder is already in the providers' list.");
+            }
+        }
+        _;
+    }
+
+    function returnStringStatus(uint8 _id)
+    public
+    pure
+    returns(bytes32)
+    {
+        if (_id == 1)
+            return "Ongoing";
+        else if (_id == 2)
+            return "Completed";
+        else
+            return "Status id is not valid";
     }
 }
