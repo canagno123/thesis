@@ -14719,12 +14719,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x36cb0BC4AFe95Eab27F900b1FE794C8C1c9F2Fa3",
-      "transactionHash": "0x163fbf74f49885097ef1b8d672a80aa0da93cac9d41398bbd1793a1c9465a4ca"
+      "address": "0x56696DBc5AD145ac4594eBEc4047DbcDF34fEd69",
+      "transactionHash": "0xde403b063511a8a5727350cca3afe3ab158b160c07a6a1934180ad6ce9c42d25"
     }
   },
   "schemaVersion": "3.0.1",
-  "updatedAt": "2019-07-20T16:34:08.868Z",
+  "updatedAt": "2019-08-12T12:41:10.946Z",
   "devdoc": {
     "methods": {}
   },

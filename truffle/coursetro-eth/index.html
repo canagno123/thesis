@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>File Sharing App</title>
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+    <script src="./node_modules/web3/dist/web3.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="/node_modules/web3/dist/web3.min.js"></script>
+    <script src="js/truffle-contract.js"></script>
+    <script src="js/app.js"></script>
+
+</head>
+<body>
+    <div class="container">
+
+        <h1>Contract Information Finder</h1>
+
+        <h2 id="contract"></h2>
+
+        <label for="id" class="col-lg-2 control-label">Contract Id</label>
+        <input id="id" type="text">
+
+
+        <button id="btn" type="button">Search</button>
+
+
+    </div>
+    
+    <script>
+        $("#btn").bind("click", function() {
+            var id = document.getElementById("id").value;
+            if (id===""){
+                App.searchContract(-1);
+            }
+            else
+                App.searchContract(parseInt(id));
+        });
+    //    if (typeof web3 !== 'undefined'){
+    //        web3 = new Web3(web3.currentProvider);
+    //    }
+    //    else {
+    //        web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:7545"));
+    //    }
+
+    //    web3.eth.defaultAccount = web3.eth.accounts[0];
+    //    console.log(web3.eth.defaultAccount) 
+
+    </script>
+
+</body>
+</html>
