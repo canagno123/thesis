@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>File Sharing App</title>
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+    <script src="./node_modules/web3/dist/web3.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="/node_modules/web3/dist/web3.min.js"></script>
+    <script src="js/truffle-contract.js"></script>
+    <script src="js/app.js"></script>
+
+</head>
+<body>
+    <div class="container">
+
+        <h1>Contract Information Finder</h1>
+        
+        <b/>
+        <h2 id="contract"></h2>
+        <label for="contractId" class="col-lg-2 control-label">Contract Id</label>
+        <input id="contractId" type="text">
+        <button id="btn-contract" type="button">Search For Contract</button>
+        
+        <b/>
+        <h2 id="auction"></h2>
+        <label for="auctionId" class="col-lg-2 control-label">Auction Id</label>
+        <input id="auctionId" type="text">
+        <button id="btn-auction" type="button">Search For Auction</button>
+
+        <div id="contractTableDiv">
+        <b/>
+        <h2 id="contractTable"></h2>
+        <label for="contractTable" class="col-lg-2 control-label">Current Contracts</label>
+        <table class="cinereousTable">
+            <thead>
+            <tr>
+            <th>Contract Id</th>
+            <th>Providers</th>
+            <th>Client</th>
+            <th>Price</th>
+            <th>Collateral Amount</th>
+            <th>State</th>
+            </tr>
+            </thead>
+            <tbody id="contractTableBody">
+            </tbody>
+            </table>
+        </div>
+
+        <div id="auctionTableDiv">
+            <b/>
+            <h2 id="auctionTable"></h2>
+            <label for="auctionTable" class="col-lg-2 control-label">Current Auctions</label>
+            <table class="cinereousTable">
+                <thead>
+                <tr>
+                <th>Auction Id</th>
+                <th>Providers</th>
+                <th>Provider Prices</th>
+                <th>Client</th>
+                <th>Providers Number Needed</th>
+                <th>State</th>
+                </tr>
+                </thead>
+                <tbody id="auctionTableBody">
+                </tbody>
+                </table>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById("contractTableDiv").style.visibility = "hidden"; 
+        document.getElementById("auctionTableDiv").style.visibility = "hidden"; 
+
+        $("#btn-contract").bind("click", function() {
+            App.clearTable("contractTableBody");
+            var contractId = document.getElementById("contractId").value;
+            document.getElementById("contractTableDiv").style.visibility = "visible"; 
+            if (contractId===""){
+                App.searchContract(-1);
+            }
+            else
+                var res = App.searchContract(parseInt(contractId));
+                console.log("Call result " + res);
+        });
+
+        $("#btn-auction").bind("click", function() {
+            App.clearTable("auctionTableBody");
+            var auctionId = document.getElementById("auctionId").value;
+            document.getElementById("auctionTableDiv").style.visibility = "visible"; 
+            if (auctionId===""){
+                App.searchAuction(-1);
+            }
+            else
+                App.searchAuction(parseInt(auctionId));
+        });
+        
+    </script>
+
+</body>
+</html>

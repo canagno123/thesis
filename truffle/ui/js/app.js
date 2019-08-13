@@ -1,6 +1,7 @@
 App = {
   web3Provider: null,
   contracts: {},
+  resContracts: null,
 
   init: async function() {
     console.log("App Initialization.");
@@ -129,8 +130,7 @@ App = {
   },
 
   searchContract: function(id) {
-    console.log("Button Clicked");
-    //var contractId = parseInt($(event.target).data('id'));
+    console.log("Contract Button Clicked");
     contractId = id;
     console.log(contractId);
     var contractExecutorInstance;
@@ -147,10 +147,11 @@ App = {
     // Return Contract Information
     return contractExecutorInstance.getContractInfo(id);
     }).then(function(result) {
-        console.log(result[1]);
-      }).catch(function(err) {
-        console.log(err.message);
-    });
+          console.log("Normal Call Contract" + result[1]);
+          App.populateContractTable(result, id);
+        }).catch(function(err) {
+          console.log(err.message);
+        });
 // Return Contract Information
 // return contractExecutorInstance.initContract(["C9876dc8e3057d6F5d61cA2d1F014770EE20d412", "E481bD70C062F510E727cB87d35126c619D0d3e7"],"fbC6D54b3C60B9717123E7e52A33646aa07918F8",1,1,1, {value:1});})
 // .then(function(result) {
@@ -159,8 +160,115 @@ App = {
 //     console.log(err.message);
 // });
 
-});
+    });
+  },
 
+  populateContractTable: function(contract, id){
+    tabBody=document.getElementById("contractTableBody");
+    row=document.createElement("tr");
+    cell0 = document.createElement("td");
+    cell1 = document.createElement("td");
+    cell2 = document.createElement("td");
+    cell3 = document.createElement("td");
+    cell4 = document.createElement("td");
+    cell5 = document.createElement("td");
+    textnode0=document.createTextNode(id);
+    textnode1=document.createTextNode(contract[0]);
+    textnode2=document.createTextNode(contract[1]);
+    textnode3=document.createTextNode(contract[2]);
+    textnode4=document.createTextNode(contract[4]);
+    var state = App.hex_to_ascii(contract[7]);
+    textnode5=document.createTextNode(state);
+    cell0.appendChild(textnode0);
+    cell1.appendChild(textnode1);
+    cell2.appendChild(textnode2);
+    cell3.appendChild(textnode3);
+    cell4.appendChild(textnode4);
+    cell5.appendChild(textnode5);
+    row.appendChild(cell0);
+    row.appendChild(cell1);
+    row.appendChild(cell2);
+    row.appendChild(cell3);
+    row.appendChild(cell4);
+    row.appendChild(cell5);
+    tabBody.appendChild(row);
+  },
+
+  searchAuction: function(id) {
+    console.log("Auction Button Clicked");
+    auctionId = id;
+    console.log(auctionId);
+    var auctionExecutorInstance;
+
+    web3.eth.getAccounts(function(error, accounts) {
+    if (error) {
+      console.log(error);
+    }
+
+
+    App.contracts.auctionExecutor.deployed().then(function(instance) {
+      auctionExecutorInstance = instance;
+      console.log(auctionExecutorInstance);
+    // Return Contract Information
+    return auctionExecutorInstance.getAuctionInfo(auctionId);
+    }).then(function(result) {
+      console.log("Normal Call Auction" + result[1]);
+      App.populateAuctionTable(result, id);
+      }).catch(function(err) {
+        console.log(err.message);
+        });
+    });
+  },
+
+  populateAuctionTable: function(auction, id){
+    tabBody=document.getElementById("auctionTableBody");
+    row=document.createElement("tr");
+    cell0 = document.createElement("td");
+    cell1 = document.createElement("td");
+    cell2 = document.createElement("td");
+    cell3 = document.createElement("td");
+    cell4 = document.createElement("td");
+    cell5 = document.createElement("td");
+    textnode0=document.createTextNode(id);
+    textnode1=document.createTextNode(auction[0]);
+    textnode2=document.createTextNode(auction[2]);
+    textnode3=document.createTextNode(auction[1]);
+    textnode4=document.createTextNode(auction[3]);
+    var state = App.hex_to_ascii(auction[6]);
+    textnode5=document.createTextNode(state);
+    cell0.appendChild(textnode0);
+    cell1.appendChild(textnode1);
+    cell2.appendChild(textnode2);
+    cell3.appendChild(textnode3);
+    cell4.appendChild(textnode4);
+    cell5.appendChild(textnode5);
+    row.appendChild(cell0);
+    row.appendChild(cell1);
+    row.appendChild(cell2);
+    row.appendChild(cell3);
+    row.appendChild(cell4);
+    row.appendChild(cell5);
+    tabBody.appendChild(row);
+  },
+
+  clearTable: function(tableBody){
+    //var new_tbody = document.createElement(tableBody);
+    //tableBody.parentNode.replaceChild(new_tbody, tableBody)
+    var tb = document.getElementById(tableBody);
+
+    // while tb has children, remove the first one
+    while (tb.childNodes.length) {
+      tb.removeChild(tb.childNodes[0]);
+    }
+  },
+
+  hex_to_ascii: function(str1){
+	  var hex  = str1.toString();
+	  var str = '';
+    for (var n = 0; n < hex.length; n += 2) {
+		  str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+	  } 
+	  return str;
   }
 
 };
