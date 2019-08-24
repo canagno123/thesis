@@ -34,6 +34,10 @@
         <input id="auctionId" type="text">
         <button id="btn-auction" type="button">Search For Auction</button>
 
+        <b/>
+        <h2 id="allInfo"></h2>
+        <button id="btn-allInfo" type="button">Get all Contracts and Auctions</button>
+
         <div id="contractTableDiv">
         <b/>
         <h2 id="contractTable"></h2>
@@ -67,6 +71,7 @@
                 <th>Client</th>
                 <th>Providers Number Needed</th>
                 <th>State</th>
+                <th>Bid</th>
                 </tr>
                 </thead>
                 <tbody id="auctionTableBody">
@@ -84,10 +89,12 @@
             var contractId = document.getElementById("contractId").value;
             document.getElementById("contractTableDiv").style.visibility = "visible"; 
             if (contractId===""){
-                App.searchContract(-1);
+                for (i=0; i<10; i++){
+                    App.searchContract(i);
+                }
             }
             else
-                var res = App.searchContract(parseInt(contractId));
+                var res = App.searchContract(contractId);
                 console.log("Call result " + res);
         });
 
@@ -96,10 +103,24 @@
             var auctionId = document.getElementById("auctionId").value;
             document.getElementById("auctionTableDiv").style.visibility = "visible"; 
             if (auctionId===""){
-                App.searchAuction(-1);
+                for (i=0; i<10; i++){
+                    App.searchAuction(i);
+                }            
             }
             else
-                App.searchAuction(parseInt(auctionId));
+                App.searchAuction(auctionId);
+        });
+
+        $("#btn-allInfo").bind("click", function() {
+            App.clearTable("contractTableBody");
+            App.clearTable("auctionTableBody");
+            document.getElementById("contractTableDiv").style.visibility = "visible"; 
+            document.getElementById("auctionTableDiv").style.visibility = "visible"; 
+            for (i=0; i<10; i++){
+                App.searchContract(i);
+                App.searchAuction(i);
+                     
+            }
         });
         
     </script>

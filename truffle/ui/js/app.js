@@ -100,8 +100,6 @@ App = {
     
       return App;
     });
-    console.log(App.contracts);
-
     //return App.bindEvents();
   },
 
@@ -130,9 +128,8 @@ App = {
   },
 
   searchContract: function(id) {
-    console.log("Contract Button Clicked");
-    contractId = id;
-    console.log(contractId);
+    console.log("Contract Button Clicked with id: " + id);
+    id;
     var contractExecutorInstance;
 
     web3.eth.getAccounts(function(error, accounts) {
@@ -143,23 +140,15 @@ App = {
 
     App.contracts.contractExecutor.deployed().then(function(instance) {
       contractExecutorInstance = instance;
-      console.log(contractExecutorInstance);
     // Return Contract Information
     return contractExecutorInstance.getContractInfo(id);
     }).then(function(result) {
           console.log("Normal Call Contract" + result[1]);
           App.populateContractTable(result, id);
         }).catch(function(err) {
+          console.log("ERROR getting contract info for id: " + id);
           console.log(err.message);
         });
-// Return Contract Information
-// return contractExecutorInstance.initContract(["C9876dc8e3057d6F5d61cA2d1F014770EE20d412", "E481bD70C062F510E727cB87d35126c619D0d3e7"],"fbC6D54b3C60B9717123E7e52A33646aa07918F8",1,1,1, {value:1});})
-// .then(function(result) {
-//     console.log(result);
-//   }).catch(function(err) {
-//     console.log(err.message);
-// });
-
     });
   },
 
@@ -195,9 +184,7 @@ App = {
   },
 
   searchAuction: function(id) {
-    console.log("Auction Button Clicked");
-    auctionId = id;
-    console.log(auctionId);
+    console.log("Auction Button Clicked with id: " + id);
     var auctionExecutorInstance;
 
     web3.eth.getAccounts(function(error, accounts) {
@@ -208,19 +195,47 @@ App = {
 
     App.contracts.auctionExecutor.deployed().then(function(instance) {
       auctionExecutorInstance = instance;
-      console.log(auctionExecutorInstance);
-    // Return Contract Information
-    return auctionExecutorInstance.getAuctionInfo(auctionId);
+      console.log("getting auction info for id: " + id);
+      // Return Auction Information
+    return auctionExecutorInstance.getAuctionInfo(id);
     }).then(function(result) {
       console.log("Normal Call Auction" + result[1]);
       App.populateAuctionTable(result, id);
       }).catch(function(err) {
+        console.log("ERROR getting auction info for id: " + id);
         console.log(err.message);
         });
     });
   },
 
+  bidAuction: function(id){
+    console.log("Easy: " + id);
+    console.log("Auction Button Clicked with id: " + id);
+    var auctionExecutorInstance;
+
+    web3.eth.getAccounts(function(error, accounts) {
+    if (error) {
+      console.log(error);
+    }
+    
+
+
+    App.contracts.auctionExecutor.deployed().then(function(instance) {
+      auctionExecutorInstance = instance;
+      console.log("getting auction info for id: " + id);
+    // Return Auction Information
+  return auctionExecutorInstance.bid(id, {value:web3.toWei("100","wei")});
+    }).then(function(result) {
+      console.log("Bidded.")
+      console.log(result);
+    }).catch(function(err) {
+      console.log(err.message);
+      });
+    });
+  },
+
   populateAuctionTable: function(auction, id){
+    console.log("populating auction table");
     tabBody=document.getElementById("auctionTableBody");
     row=document.createElement("tr");
     cell0 = document.createElement("td");
@@ -229,6 +244,7 @@ App = {
     cell3 = document.createElement("td");
     cell4 = document.createElement("td");
     cell5 = document.createElement("td");
+    cell6 = document.createElement("td");
     textnode0=document.createTextNode(id);
     textnode1=document.createTextNode(auction[0]);
     textnode2=document.createTextNode(auction[2]);
@@ -236,18 +252,28 @@ App = {
     textnode4=document.createTextNode(auction[3]);
     var state = App.hex_to_ascii(auction[6]);
     textnode5=document.createTextNode(state);
+    textnode6=document.create;
+    var bidLink = document.createElement("a");
+    var textnode6 = document.createTextNode("Bid for Auction");
+    bidLink.style.color = "blue";
+    bidLink.appendChild(textnode6);
+    bidLink.addEventListener('click', function() {
+      App.bidAuction(id);
+    }, false);
     cell0.appendChild(textnode0);
     cell1.appendChild(textnode1);
     cell2.appendChild(textnode2);
     cell3.appendChild(textnode3);
     cell4.appendChild(textnode4);
     cell5.appendChild(textnode5);
+    cell6.appendChild(bidLink);
     row.appendChild(cell0);
     row.appendChild(cell1);
     row.appendChild(cell2);
     row.appendChild(cell3);
     row.appendChild(cell4);
     row.appendChild(cell5);
+    row.appendChild(cell6);
     tabBody.appendChild(row);
   },
 
