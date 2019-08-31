@@ -19,64 +19,82 @@
 </head>
 <body>
     <div class="container">
-
-        <h1>Contract Information Finder</h1>
+        <div class="left">
+            <h3>Contract Information Finder</h3>
         
-        <b/>
-        <h2 id="contract"></h2>
-        <label for="contractId" class="col-lg-2 control-label">Contract Id</label>
-        <input id="contractId" type="text">
-        <button id="btn-contract" type="button">Search For Contract</button>
-        
-        <b/>
-        <h2 id="auction"></h2>
-        <label for="auctionId" class="col-lg-2 control-label">Auction Id</label>
-        <input id="auctionId" type="text">
-        <button id="btn-auction" type="button">Search For Auction</button>
-
-        <b/>
-        <h2 id="allInfo"></h2>
-        <button id="btn-allInfo" type="button">Get all Contracts and Auctions</button>
-
-        <div id="contractTableDiv">
-        <b/>
-        <h2 id="contractTable"></h2>
-        <label for="contractTable" class="col-lg-2 control-label">Current Contracts</label>
-        <table class="cinereousTable">
-            <thead>
-            <tr>
-            <th>Contract Id</th>
-            <th>Providers</th>
-            <th>Client</th>
-            <th>Price</th>
-            <th>Collateral Amount</th>
-            <th>State</th>
-            </tr>
-            </thead>
-            <tbody id="contractTableBody">
-            </tbody>
-            </table>
-        </div>
-
-        <div id="auctionTableDiv">
             <b/>
-            <h2 id="auctionTable"></h2>
-            <label for="auctionTable" class="col-lg-2 control-label">Current Auctions</label>
+            <h2 id="contract"></h2>
+            <input type="text" id="contractId" value="Contract Id"/>
+            <button id="btn-contract" class="myButton">Search For Contract</button>
+        
+            <b/>
+            <h2 id="auction"></h2>
+            <input type="text" id="auctionId" value="Auction Id"/>
+            <button id="btn-auction" class="myButton">Search For Auction</button>
+
+            <b/>
+            <h2 id="allInfo"></h2>
+            <button id="btn-allInfo" class="myButton">Get all Contracts and Auctions</button>
+        </div>
+        <div class="left">
+            <h3>Contract and Auction Initiator</h3>
+            <h2 id="contractInit"></h2>
+            <input type="text" id="provs" value="Providers"/>
+            <input type="text" id="client" value="Client"/>
+            <input type="text" id="hash" value="Root Hash"/>
+            <input type="text" id="collateral" value="Collateral Amount"/>
+            <input type="text" id="price" value="Price"/>
+            <button id="btn-init-contract" class="myButton">Initiate Contract</button>
+        
+            <b/>
+            <h2 id="auctionInit"></h2>
+            <input type="text" id="provNum" value="Providers Number"/>
+            <input type="text" id="fileSize" value="File Size"/>
+            <button id="btn-init-auction" class="myButton">Initiate Auction</button>
+        </div>
+        <div class="left">
+            <div id="contractTableDiv">
+            <h3>Contracts</h3>
+            <b/>
+            <h2 id="contractTable"></h2>
             <table class="cinereousTable">
                 <thead>
                 <tr>
-                <th>Auction Id</th>
+                <th>Contract Id</th>
                 <th>Providers</th>
-                <th>Provider Prices</th>
                 <th>Client</th>
-                <th>Providers Number Needed</th>
+                <th>Price</th>
+                <th>Collateral Amount</th>
                 <th>State</th>
-                <th>Bid</th>
                 </tr>
                 </thead>
-                <tbody id="auctionTableBody">
+                <tbody id="contractTableBody">
                 </tbody>
                 </table>
+            </div>
+
+            <div id="auctionTableDiv">
+                <b/>
+                <h2 id="auctionTable"></h2>
+                <h3>Auctions</h3>
+                <table class="cinereousTable">
+                    <thead>
+                    <tr>
+                    <th>Auction Id</th>
+                    <th>Providers</th>
+                    <th>Provider Prices</th>
+                    <th>Client</th>
+                    <th>Providers Number Needed</th>
+                    <th>State</th>
+                    <th>Bid</th>
+                    <th>Bid Amount</th>
+                    <th>Complete</th>
+                    </tr>
+                    </thead>
+                    <tbody id="auctionTableBody">
+                    </tbody>
+                    </table>
+            </div>
         </div>
     </div>
     
@@ -121,6 +139,15 @@
                 App.searchAuction(i);
                      
             }
+        });
+
+        $("#btn-init-contract").bind("click", function() {
+            var providers = document.getElementById("provs").value;
+            var client = document.getElementById("client").value;
+            var hash = document.getElementById("hash").value;
+            var collateral = document.getElementById("collateral").value;
+            var price = document.getElementById("price").value;
+            App.initContract(providers, client, hash, collateral, price);
         });
         
     </script>
