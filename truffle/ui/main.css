@@ -1,7 +1,7 @@
 body {
     background-color:#84C5F7;
     padding: 2em;
-    font-family: 'Raleway','Source Sans Pro', 'Arial';
+    font-family: 'Verdana';
 }
 .container {
     width: 100%;
@@ -53,7 +53,7 @@ input[type=text]:focus{
 	display:inline-block;
 	cursor:pointer;
 	color:#ffffff;
-	font-family:Arial;
+	font-family:'Comic Sans MS';
 	font-size:15px;
 	font-weight:bold;
 	padding:11px 23px;
@@ -105,6 +105,7 @@ table.cinereousTable {
   table.cinereousTable thead th {
     font-size: 15px;
     font-weight: bold;
+    font-family: 'Comic Sans MS';
     color: #F0F0F0;
     text-align: center;
     border-left: 2px solid #948473;
@@ -124,4 +125,5 @@ table.cinereousTable {
   }
   table.cinereousTable tfoot td {
     font-size: 16px;
+    font-family: 'Comic Sans MS';
   }

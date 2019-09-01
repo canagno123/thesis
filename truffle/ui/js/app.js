@@ -103,7 +103,6 @@ App = {
   },
 
   searchContract: function(id) {
-    console.log("Contract Button Clicked with id: " + id);
     id;
     var contractExecutorInstance;
 
@@ -118,7 +117,6 @@ App = {
     // Return Contract Information
     return contractExecutorInstance.getContractInfo(id);
     }).then(function(result) {
-          console.log("Normal Call Contract" + result[1]);
           App.populateContractTable(result, id);
         }).catch(function(err) {
           console.log("ERROR getting contract info for id: " + id);
@@ -258,7 +256,7 @@ App = {
   },
 
   searchAuction: function(id) {
-    console.log("Auction Button Clicked with id: " + id);
+    // console.log("Auction Button Clicked with id: " + id);
     var auctionExecutorInstance;
 
     web3.eth.getAccounts(function(error, accounts) {
@@ -341,7 +339,6 @@ App = {
   return auctionExecutorInstance.completeAuction(id);
     }).then(function(result) {
       console.log("Auction "+ id + " completed.")
-      console.log(result);
     }).catch(function(err) {
       console.log(err.message);
       });
@@ -349,7 +346,6 @@ App = {
   },
 
   populateAuctionTable: function(auction, id){
-    console.log("populating auction table");
     tabBody=document.getElementById("auctionTableBody");
     row=document.createElement("tr");
     cell0 = document.createElement("td");
@@ -362,8 +358,8 @@ App = {
     cell7 = document.createElement("td");
     cell8 = document.createElement("td");
     textnode0=document.createTextNode(id);
-    textnode1=document.createTextNode(auction[0]);
-    textnode2=document.createTextNode(auction[2]);
+    textnode1=document.createTextNode(App.clearProvidersList(auction[0]));
+    textnode2=document.createTextNode(App.clearPriceList(auction[2]));
     textnode3=document.createTextNode(auction[1]);
     textnode4=document.createTextNode(auction[3]);
     var state = App.hex_to_ascii(auction[6]);
@@ -432,6 +428,24 @@ App = {
 		  arr1.push(hex);
 	  }
 	  return arr1.join('');
+  },
+
+  clearProvidersList(providersList){
+    for (var i=0, l = providersList.length; i < l; i++){
+      if(providersList[i] == "0x0000000000000000000000000000000000000000"){
+        providersList.splice(i, 1);
+      }
+    }
+    return providersList;
+  },
+
+  clearPriceList(priceList){
+    for (var i=0, l = priceList.length; i < l; i++){
+      if(priceList[i] == "0"){
+        priceList.splice(i, 1);
+      }
+    }
+    return priceList;
   }
 
 
