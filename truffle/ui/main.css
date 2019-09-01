@@ -94,7 +94,7 @@ table.cinereousTable {
     padding: 4px 4px;
   }
   table.cinereousTable tbody td {
-    font-size: 13px;
+    font-size: 11px;
   }
   table.cinereousTable thead {
     background: #948473;
@@ -103,7 +103,7 @@ table.cinereousTable {
     background: linear-gradient(to bottom, #afa396 0%, #9e9081 66%, #948473 100%);
   }
   table.cinereousTable thead th {
-    font-size: 17px;
+    font-size: 15px;
     font-weight: bold;
     color: #F0F0F0;
     text-align: center;

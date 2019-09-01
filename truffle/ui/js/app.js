@@ -100,31 +100,6 @@ App = {
     
       return App;
     });
-    //return App.bindEvents();
-  },
-
-  // bindEvents: function() {
-  //   $("#button").click(function() {
-  //     App.handleAdopt
-  //   });
-  // },
-
-  markCancelled: function(statuses, account) {
-    var contractExecutorInstance;
-
-    App.contracts.contractExecutor.deployed().then(function(instance) {
-    contractExecutorInstance = instance;
-
-    return contractExecutorInstance.getContractStatuses.call();
-    }).then(function(statuses) {
-      for (i = 0; i < statuses.length; i++) {
-        if (statuses[i] != '1') {
-          $('.panel-pet').eq(i).find('button').text('Cancelled').attr('disabled', true);
-        }
-      }
-    }).catch(function(err) {
-      console.log(err.message);
-    });
   },
 
   searchContract: function(id) {
@@ -168,8 +143,64 @@ App = {
     var providerArray = providers.split(",");
     return contractExecutorInstance.initContract(providerArray,client,App.ascii_to_hex(hash),collateral,price, {value:web3.toWei(collateral,"wei")});
     }).then(function(result) {
-          console.log("Initiating contract " + result[1]);
+          console.log("Initiating contract..");
         }).catch(function(err) {
+          console.log(err.message);
+        });
+    });
+  },
+
+  terminateContract: function(id) {
+    console.log("Contract Termination Button Clicked with: " + id + ".");
+    var contractExecutorInstance;
+
+    web3.eth.getAccounts(function(error, accounts) {
+    if (error) {
+      console.log(error);
+    }
+
+
+    App.contracts.contractExecutor.deployed().then(function(instance) {
+      contractExecutorInstance = instance;
+    // Return Contract Information
+    return contractExecutorInstance.initContract(providerArray,client,App.ascii_to_hex(hash),collateral,price, {value:web3.toWei(collateral,"wei")});
+    }).then(function(result) {
+          console.log("Initiating contract..");
+        }).catch(function(err) {
+          console.log(err.message);
+        });
+    });
+  },
+
+  payContract: function(id) {
+    console.log("Pay Contract Button Clicked with id: " + id);
+    var contractExecutorInstance;
+
+    web3.eth.getAccounts(function(error, accounts) {
+    if (error) {
+      console.log(error);
+    }
+
+
+    App.contracts.contractExecutor.deployed().then(function(instance) {
+      contractExecutorInstance = instance;
+    // Return Contract Information
+    return contractExecutorInstance.getContractInfo(id);
+    }).then(function(result) {
+          console.log("Getting Contract Price: " + result[2]);
+          App.contracts.contractExecutor.deployed().then(function(instance) {
+            contractExecutorInstance = instance;
+            console.log("Paying contract " + id + ", " + result[2] + " wei.");
+          // Return Contract Information
+          return contractExecutorInstance.pay(id, {value:web3.toWei(result[2],"wei")});
+          }).then(function(result) {
+                console.log("Successfull Payment: " + result);
+              }).catch(function(err) {
+                console.log("ERROR paying contract with id: " + id);
+                console.log(err.message);
+              });
+        }).catch(function(err) {
+          console.log("ERROR getting contract price for id: " + id);
           console.log(err.message);
         });
     });
@@ -184,6 +215,8 @@ App = {
     cell3 = document.createElement("td");
     cell4 = document.createElement("td");
     cell5 = document.createElement("td");
+    cell6 = document.createElement("td");
+    cell7 = document.createElement("td");
     textnode0=document.createTextNode(id);
     textnode1=document.createTextNode(contract[0]);
     textnode2=document.createTextNode(contract[1]);
@@ -191,18 +224,36 @@ App = {
     textnode4=document.createTextNode(contract[4]);
     var state = App.hex_to_ascii(contract[7]);
     textnode5=document.createTextNode(state);
+    var payLink = document.createElement("a");
+    var textnode6 = document.createTextNode("Pay Contract");
+    payLink.style.color = "blue";
+    payLink.appendChild(textnode6);
+    payLink.addEventListener('click', function() {
+      App.payContract(id);
+    }, false);
+    var terminateLink = document.createElement("a");
+    var textnode7 = document.createTextNode("Terminate Contract");
+    terminateLink.style.color = "blue";
+    terminateLink.appendChild(textnode7);
+    terminateLink.addEventListener('click', function() {
+      App.terminateContract(id);
+    }, false);
     cell0.appendChild(textnode0);
     cell1.appendChild(textnode1);
     cell2.appendChild(textnode2);
     cell3.appendChild(textnode3);
     cell4.appendChild(textnode4);
     cell5.appendChild(textnode5);
+    cell6.appendChild(payLink);
+    cell7.appendChild(terminateLink);
     row.appendChild(cell0);
     row.appendChild(cell1);
     row.appendChild(cell2);
     row.appendChild(cell3);
     row.appendChild(cell4);
     row.appendChild(cell5);
+    row.appendChild(cell6);
+    row.appendChild(cell7);
     tabBody.appendChild(row);
   },
 
@@ -231,6 +282,28 @@ App = {
     });
   },
 
+  initAuction: function(provNum) {
+    console.log("Auction Init Button Clicked with: " + provNum + ".");
+    var auctionExecutorInstance;
+
+    web3.eth.getAccounts(function(error, accounts) {
+    if (error) {
+      console.log(error);
+    }
+
+
+    App.contracts.auctionExecutor.deployed().then(function(instance) {
+      auctionExecutorInstance = instance;
+    // Return Auction Information
+    return auctionExecutorInstance.initAuction(provNum);
+    }).then(function(result) {
+          console.log("Initiating auction..");
+        }).catch(function(err) {
+          console.log(err.message);
+        });
+    });
+  },
+
   bidAuction: function(id, bidValue){
     console.log("Easy: " + id + " " + "value: " + bidValue);
     console.log("Auction Button Clicked with id: " + id);
@@ -247,7 +320,6 @@ App = {
   return auctionExecutorInstance.bid(id, {value:web3.toWei(bidValue,"wei")});
     }).then(function(result) {
       console.log("Bidded.")
-      console.log(result);
     }).catch(function(err) {
       console.log(err.message);
       });

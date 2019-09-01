@@ -20,25 +20,20 @@
 <body>
     <div class="container">
         <div class="left">
-            <h3>Contract Information Finder</h3>
-        
+            <h2>Search For Contract</h2>
             <b/>
-            <h2 id="contract"></h2>
             <input type="text" id="contractId" value="Contract Id"/>
             <button id="btn-contract" class="myButton">Search For Contract</button>
         
-            <b/>
-            <h2 id="auction"></h2>
+            <h2>Search For Auction</h2>
             <input type="text" id="auctionId" value="Auction Id"/>
             <button id="btn-auction" class="myButton">Search For Auction</button>
 
-            <b/>
-            <h2 id="allInfo"></h2>
+            <h2>Get All Contracts and Auctions</h2>
             <button id="btn-allInfo" class="myButton">Get all Contracts and Auctions</button>
         </div>
         <div class="left">
-            <h3>Contract and Auction Initiator</h3>
-            <h2 id="contractInit"></h2>
+            <h2>Initiate New Contract</h2>
             <input type="text" id="provs" value="Providers"/>
             <input type="text" id="client" value="Client"/>
             <input type="text" id="hash" value="Root Hash"/>
@@ -46,10 +41,9 @@
             <input type="text" id="price" value="Price"/>
             <button id="btn-init-contract" class="myButton">Initiate Contract</button>
         
-            <b/>
-            <h2 id="auctionInit"></h2>
+            <h2>Initiate New Auction</h2>
             <input type="text" id="provNum" value="Providers Number"/>
-            <input type="text" id="fileSize" value="File Size"/>
+            <input type="text" id="fileSize" value="File Size (MB)"/>
             <button id="btn-init-auction" class="myButton">Initiate Auction</button>
         </div>
         <div class="left">
@@ -66,6 +60,8 @@
                 <th>Price</th>
                 <th>Collateral Amount</th>
                 <th>State</th>
+                <th>Pay</th>
+                <th>Terminate</th>
                 </tr>
                 </thead>
                 <tbody id="contractTableBody">
@@ -148,6 +144,12 @@
             var collateral = document.getElementById("collateral").value;
             var price = document.getElementById("price").value;
             App.initContract(providers, client, hash, collateral, price);
+        });
+
+        $("#btn-init-auction").bind("click", function() {
+            var provNum = document.getElementById("provNum").value;
+            var fileSize = document.getElementById("fileSize").value;
+            App.initAuction(provNum);
         });
         
     </script>
