@@ -216,8 +216,8 @@ App = {
     cell6 = document.createElement("td");
     cell7 = document.createElement("td");
     textnode0=document.createTextNode(id);
-    textnode1=document.createTextNode(contract[0]);
-    textnode2=document.createTextNode(contract[1]);
+    textnode1=document.createTextNode(App.clearAddressList(contract[0]));
+    textnode2=document.createTextNode(contract[1].substring(2, 10));
     textnode3=document.createTextNode(contract[2]);
     textnode4=document.createTextNode(contract[4]);
     var state = App.hex_to_ascii(contract[7]);
@@ -358,9 +358,9 @@ App = {
     cell7 = document.createElement("td");
     cell8 = document.createElement("td");
     textnode0=document.createTextNode(id);
-    textnode1=document.createTextNode(App.clearProvidersList(auction[0]));
+    textnode1=document.createTextNode(App.clearAddressList(auction[0]));
     textnode2=document.createTextNode(App.clearPriceList(auction[2]));
-    textnode3=document.createTextNode(auction[1]);
+    textnode3=document.createTextNode(auction[1].substring(2, 10));
     textnode4=document.createTextNode(auction[3]);
     var state = App.hex_to_ascii(auction[6]);
     textnode5=document.createTextNode(state);
@@ -430,11 +430,18 @@ App = {
 	  return arr1.join('');
   },
 
-  clearProvidersList(providersList){
+  clearAddressList(providersList){
+    console.log(providersList[0] + providersList[1] + providersList[2] + String(providersList.length));
+    
     for (var i=0, l = providersList.length; i < l; i++){
       if(providersList[i] == "0x0000000000000000000000000000000000000000"){
         providersList.splice(i, 1);
+        break;
       }
+    }
+    for (var i=0, l = providersList.length; i < l; i++){
+      providersList[i] = providersList[i].substring(2, 10);
+
     }
     return providersList;
   },
@@ -443,6 +450,7 @@ App = {
     for (var i=0, l = priceList.length; i < l; i++){
       if(priceList[i] == "0"){
         priceList.splice(i, 1);
+        break;
       }
     }
     return priceList;
