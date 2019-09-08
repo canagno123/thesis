@@ -21,16 +21,22 @@
     <div class="container">
         <div class="left">
             <h2>Search For Contract</h2>
-            <b/>
+
             <input type="text" id="contractId" value="Contract Id"/>
             <button id="btn-contract" class="myButton">Search For Contract</button>
-        
+            
             <h2>Search For Auction</h2>
             <input type="text" id="auctionId" value="Auction Id"/>
             <button id="btn-auction" class="myButton">Search For Auction</button>
 
             <h2>Get All Contracts and Auctions</h2>
             <button id="btn-allInfo" class="myButton">Get all Contracts and Auctions</button>
+            
+            <h2>Choose a File to Store</h2>
+            <div class="upload-btn-wrapper">
+                <button id="btn-upload" class="myButton">Upload File</button>
+                <input type="file" name="myfile" />
+            </div>
         </div>
         <div class="left">
             <h2>Initiate New Contract</h2>
@@ -44,7 +50,10 @@
             <h2>Initiate New Auction</h2>
             <input type="text" id="provNum" value="Providers Number"/>
             <input type="text" id="fileSize" value="File Size (MB)"/>
+            <input type="text" id="collateralAuction" value="Collateral Amount"/>
+            <input type="text" id="hashAuction" value="Root Hash"/>
             <button id="btn-init-auction" class="myButton">Initiate Auction</button>
+            <button id="btn-tmp" class="myButton">tmp</button>
         </div>
         <div class="left">
             <div id="contractTableDiv">
@@ -81,6 +90,9 @@
                     <th>Provider Prices</th>
                     <th>Client</th>
                     <th>Providers Number Needed</th>
+                    <th>File Size (MB)</th>
+                    <th>Collateral Amount</th>
+                    <th>Root Hash</th>
                     <th>State</th>
                     <th>Bid</th>
                     <th>Bid Amount</th>
@@ -148,7 +160,13 @@
         $("#btn-init-auction").bind("click", function() {
             var provNum = document.getElementById("provNum").value;
             var fileSize = document.getElementById("fileSize").value;
-            App.initAuction(provNum);
+            var collateralAuction = document.getElementById("collateralAuction").value;
+            var hashAuction = document.getElementById("hashAuction").value;
+            App.initAuction(provNum, fileSize, collateralAuction, hashAuction);
+        });
+
+        $("#btn-tmp").bind("click", function() {
+            App.getTableAverage([1,0,32,13]);
         });
         
     </script>

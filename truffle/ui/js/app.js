@@ -280,8 +280,8 @@ App = {
     });
   },
 
-  initAuction: function(provNum) {
-    console.log("Auction Init Button Clicked with: " + provNum + ".");
+  initAuction: function(provNum, fileSize, collateralAuction, hashAuction) {
+    console.log("Auction Init Button Clicked with: " + provNum +  ", " + fileSize + ", " + collateralAuction + ", " + hashAuction + "." );
     var auctionExecutorInstance;
 
     web3.eth.getAccounts(function(error, accounts) {
@@ -293,7 +293,7 @@ App = {
     App.contracts.auctionExecutor.deployed().then(function(instance) {
       auctionExecutorInstance = instance;
     // Return Auction Information
-    return auctionExecutorInstance.initAuction(provNum);
+    return auctionExecutorInstance.initAuction(provNum, fileSize, collateralAuction, App.ascii_to_hex(hashAuction));
     }).then(function(result) {
           console.log("Initiating auction..");
         }).catch(function(err) {
@@ -328,6 +328,7 @@ App = {
     console.log("Easy completion: " + id);
     console.log("Auction Completion Button Clicked with id: " + id);
     var auctionExecutorInstance;
+    var contractExecutorInstance;
 
     web3.eth.getAccounts(function(error, accounts) {
     if (error) {
@@ -335,10 +336,32 @@ App = {
     }
     App.contracts.auctionExecutor.deployed().then(function(instance) {
       auctionExecutorInstance = instance;
-    // Return Auction Information
+    // Complete Auction
   return auctionExecutorInstance.completeAuction(id);
     }).then(function(result) {
       console.log("Auction "+ id + " completed.")
+      App.contracts.auctionExecutor.deployed().then(function(instance) {
+        auctionExecutorInstance = instance;
+      // Return Auction Information
+      console.log("Getting information of auction with id " + id + " to create a contract.")
+      return auctionExecutorInstancontractcontractce.getAuctionInfo(id);
+      }).then(function(result) {
+        console.log("Initiating contract for: " + result[0] + " providers, " +
+        result[1] + " client, " + result[2] + " price list, " +  result[8] + " collateral, " + 
+        result[9] + " rootHash.")
+        App.contracts.contractExecutor.deployed().then(function(instance) {
+          contractExecutorInstance = instance;
+        // Return Auction Information
+        console.log("Getting information of auction with id " + id + " to create a contract.")
+        return contractExecutorInstance.initContract(result[0],result[1],result[9],result[8], App.getTableAverage(result[2]), {value:web3.toWei(result[8],"wei")});
+        }).then(function(result) {
+          console.log("Contract succesfully initiated.")
+        }).catch(function(err) {
+          console.log(err.message);
+          });
+      }).catch(function(err) {
+        console.log(err.message);
+        });
     }).catch(function(err) {
       console.log(err.message);
       });
@@ -357,24 +380,30 @@ App = {
     cell6 = document.createElement("td");
     cell7 = document.createElement("td");
     cell8 = document.createElement("td");
+    cell9 = document.createElement("td");
+    cell10 = document.createElement("td");
+    cell11 = document.createElement("td");
     textnode0=document.createTextNode(id);
     textnode1=document.createTextNode(App.clearAddressList(auction[0]));
     textnode2=document.createTextNode(App.clearPriceList(auction[2]));
     textnode3=document.createTextNode(auction[1].substring(2, 10));
     textnode4=document.createTextNode(auction[3]);
+    textnode5=document.createTextNode(auction[7]);
+    textnode6=document.createTextNode(auction[8]);
+    textnode7=document.createTextNode(App.hex_to_ascii(auction[9]));
     var state = App.hex_to_ascii(auction[6]);
-    textnode5=document.createTextNode(state);
+    textnode8=document.createTextNode(state);
     var bidLink = document.createElement("a");
-    var textnode6 = document.createTextNode("Bid for Auction");
+    var textnode9 = document.createTextNode("Bid for Auction");
     bidLink.style.color = "blue";
-    bidLink.appendChild(textnode6);
+    bidLink.appendChild(textnode9);
     bidLink.addEventListener('click', function() {
       App.bidAuction(id, bidInput.value);
     }, false);
     var completeAuctionLink = document.createElement("a");
-    var textnode7 = document.createTextNode("Complete Auction");
+    var textnode10 = document.createTextNode("Complete Auction");
     completeAuctionLink.style.color = "blue";
-    completeAuctionLink.appendChild(textnode7);
+    completeAuctionLink.appendChild(textnode10);
     completeAuctionLink.addEventListener('click', function() {
       App.completeAuction(id);
     }, false);
@@ -386,9 +415,12 @@ App = {
     cell3.appendChild(textnode3);
     cell4.appendChild(textnode4);
     cell5.appendChild(textnode5);
-    cell6.appendChild(bidLink);
-    cell7.appendChild(bidInput);
-    cell8.appendChild(completeAuctionLink);
+    cell6.appendChild(textnode6);
+    cell7.appendChild(textnode7);
+    cell8.appendChild(textnode8);
+    cell9.appendChild(bidLink);
+    cell10.appendChild(bidInput);
+    cell11.appendChild(completeAuctionLink);
     row.appendChild(cell0);
     row.appendChild(cell1);
     row.appendChild(cell2);
@@ -398,6 +430,9 @@ App = {
     row.appendChild(cell6);
     row.appendChild(cell7);
     row.appendChild(cell8);
+    row.appendChild(cell9);
+    row.appendChild(cell10);
+    row.appendChild(cell11);
     tabBody.appendChild(row);
   },
 
@@ -454,6 +489,21 @@ App = {
       }
     }
     return priceList;
+  },
+
+  getTableAverage(priceList){
+    var sum = 0;
+    console.log("Before: " + priceList);
+    priceList = App.clearPriceList(priceList);
+    console.log("After: " + priceList);
+    for (var i=0, l = priceList.length; i < l; i++){
+      sum += parseInt(priceList[i]);
+    }
+    console.log("Sum: " + sum);
+    console.log("size: " + priceList.length);
+    console.log("unround: " + sum/priceList.length)
+    console.log("round: " + Math.round(sum/priceList.length));
+    return Math.round(sum/priceList.length);
   }
 
 

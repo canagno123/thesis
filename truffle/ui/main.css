@@ -1,12 +1,16 @@
+@import url(https://fonts.googleapis.com/css?family=Lato:400,700,300);
+
 body {
-    background-color:#84C5F7;
+    background-color:#67dbbc;
     padding: 2em;
-    font-family: 'Verdana';
+    font-family: 'Lato', sans-serif;
 }
 .container {
-    width: 100%;
-
-    margin: 0 auto;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 5px;
 }
 label{
   display:block;
@@ -16,9 +20,9 @@ label{
     width: 400px;
     float:left;
 }
-.right {
+.bottom {
   width: 200px;
-  float:right;
+  float:bottom;
 }
 input[type=text]{
     width:75%;
@@ -53,7 +57,7 @@ input[type=text]:focus{
 	display:inline-block;
 	cursor:pointer;
 	color:#ffffff;
-	font-family:'Comic Sans MS';
+	font-family:'Lato', sans-serif;
 	font-size:15px;
 	font-weight:bold;
 	padding:11px 23px;
@@ -75,13 +79,6 @@ input[type=text]:focus{
 	top:1px;
 }
 
-
-
-#instructor {
-    padding:1em;
-    background-color:#fff;
-    margin: 1em 0;
-}
 
 table.cinereousTable {
     border: 6px solid #948473;
@@ -105,7 +102,7 @@ table.cinereousTable {
   table.cinereousTable thead th {
     font-size: 15px;
     font-weight: bold;
-    font-family: 'Comic Sans MS';
+    font-family: 'Lato', sans-serif;
     color: #F0F0F0;
     text-align: center;
     border-left: 2px solid #948473;
@@ -125,5 +122,20 @@ table.cinereousTable {
   }
   table.cinereousTable tfoot td {
     font-size: 16px;
-    font-family: 'Comic Sans MS';
+    font-family: 'Lato', sans-serif;
+  }
+
+  .upload-btn-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+  }
+
+  
+  .upload-btn-wrapper input[type=file] {
+    font-size: 100px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
   }

@@ -19,12 +19,12 @@ contract auctionExecutor{
         ratings = _rating;
     }
 
-	function initAuction(uint8 _providersNumber)
+	function initAuction(uint8 _providersNumber, uint8 tempFileSize, uint tempCollateralAmount, bytes32 tempRootHash)
 	public
 	payable
 	returns (bytes32 initMessage)
 	{
-        auctions[id] = new Auction(msg.sender, _providersNumber);
+        auctions[id] = new Auction(msg.sender, _providersNumber, tempFileSize, tempRootHash, tempCollateralAmount);
 		id++;
 		return "Initialization successfull.";
 	}
@@ -33,7 +33,7 @@ contract auctionExecutor{
 	public
     view
 	returns(address payable[] memory tempProvider, address payable tempClient, uint[] memory tempPrice, uint8 tempProvidersNumber, uint tempStartTime,
-            uint tempEndTime, bytes32 tempStatus, bytes32 infoMessage)
+            uint tempEndTime, bytes32 tempStatus, uint8 tempFileSize, uint tempCollateralAmount, bytes32 tempRootHash, bytes32 infoMessage)
 	{
 		tempProvider = auctions[_id].getProvidersList();
         tempClient = auctions[_id].getClient();
@@ -41,6 +41,9 @@ contract auctionExecutor{
 		tempPrice = auctions[_id].getProvidersPriceList();
 		tempEndTime = auctions[_id].getEndTime();
 		tempProvidersNumber = auctions[_id].getProvidersNumber();
+        tempFileSize = auctions[_id].getFileSize();
+        tempCollateralAmount = auctions[_id].getCollateralAmount();
+        tempRootHash = auctions[_id].getRootHash();
 		tempStatus = returnStringStatus(auctions[_id].getStatus());
 		infoMessage = "OK";
 	}
