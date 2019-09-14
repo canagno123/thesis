@@ -33,10 +33,10 @@
             <button id="btn-allInfo" class="myButton">Get all Contracts and Auctions</button>
             
             <h2>Choose a File to Store</h2>
-            <div class="upload-btn-wrapper">
-                <button id="btn-upload" class="myButton">Upload File</button>
-                <input type="file" name="myfile" />
-            </div>
+            <form method="POST" enctype="multipart/form-data" action="/upload">
+                <input type="file" name ="filename">
+                <input type="submit" value="Upload">
+            </form>
         </div>
         <div class="left">
             <h2>Initiate New Contract</h2>
@@ -168,6 +168,7 @@
         $("#btn-tmp").bind("click", function() {
             App.getTableAverage([1,0,32,13]);
         });
+
         
     </script>
 
