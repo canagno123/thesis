@@ -1,4 +1,0 @@
-
-** Time measurement may be an issue. Epochs last 100 hours, unable to determine when the epoch started etc.
-
-** leaf, nodeHashes, nodeOrientations must be provided in every call for a proof validation.

@@ -8,6 +8,32 @@ library StorageProof {
     // Size of a hash digest, in bytes.
     uint internal constant HASH_DIGEST_SIZE = 32;
 
+    function verify2(bytes32 root, bytes32 leaf, bytes32[] memory proof)
+    public
+    pure
+    returns (bool)
+    {
+        bytes32 computedHash = leaf;
+
+        for (uint256 i = 0; i < proof.length; i++) {
+        bytes32 proofElement = proof[i];
+
+        if (computedHash < proofElement) {
+            // Hash(current computed hash + current element of the proof)
+            computedHash = keccak256(abi.encodePacked(computedHash, proofElement));
+        } else {
+            // Hash(current element of the proof + current computed hash)
+            computedHash = keccak256(abi.encodePacked(proofElement, computedHash));
+        }
+        }
+
+        // Check if the computed hash (root) is equal to the provided root
+        return computedHash == root;
+    }
+
+
+
+
     // Verifies a Merkle Tree Proof.
     function verify(bytes32 rootHash, bytes memory leaf, bytes32[] memory nodeHashes, bool[] memory nodeOrientations)
     public
@@ -47,7 +73,7 @@ library StorageProof {
 
     // Copies `bts` to the memory location pointer by `dst`.
     function copyBytes32(uint dst, bytes32 bts) internal pure {
-        assembly {
+        assembly{
             mstore(dst, bts)
         }
     }
@@ -57,7 +83,7 @@ library StorageProof {
     // Ref:
     //      https://github.com/ethereum/solidity-examples/blob/master/src/unsafe/Memory.sol
     function dataPtr(bytes memory bts) internal pure returns (uint addr) {
-        assembly {
+        assembly{
             addr := add(bts, /* BYTES_HEADER_SIZE */ 32)
         }
     }

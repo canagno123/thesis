@@ -110,19 +110,19 @@ contract contractExecutor{
 		}
 	}
 
-	// function getVerification(uint _id, address payable _provider, bytes memory _leaf, bytes32[] memory _nodeHashes, bool[] memory _nodeOrientations)
-	// public
-	// returns(bytes32 verificationMessage)
-	// {
-	// 	if (StorageProof.verify(contracts[_id].getRootHash(), _leaf, _nodeHashes, _nodeOrientations)){
-	// 		verifications[_id][_provider] = now;
-	// 		verificationMessage = "OK";
-	// 	}
-	// 	else{
-	// 		terminateCulpProvider(_id, _provider,  _leaf, _nodeHashes, _nodeOrientations);
-	// 		verificationMessage = "NOK";
-	// 	}
-	// }
+	function getVerification(uint _id, address payable _provider, bytes32 _leaf, bytes32[] memory _proof)
+	public
+	returns(bytes32 verificationMessage)
+	{
+		if (StorageProof.verify2(contracts[_id].getRootHash(), _leaf, _proof)){
+			verifications[_id][_provider] = now;
+			verificationMessage = "OK";
+		}
+		else{
+			terminateCulpProvider(_id, _provider,  _leaf, _proof);
+			verificationMessage = "NOK";
+		}
+	}
 
 	function terminateCulpClient(uint _id)
 	public
@@ -142,10 +142,10 @@ contract contractExecutor{
 		return "OK";
 	}
 
-	function terminateCulpProvider(uint _id, address payable _provider)
+	function terminateCulpProvider(uint _id, address payable _provider, bytes32 _leaf, bytes32[] memory _proof)
 	public
 	payable
-	//onlyNotVerified(_id, _leaf, _nodeHashes, _nodeOrientations)
+	onlyNotVerified(_id, _leaf, _proof)
 	returns(bytes32 terminationMessage)
 	{
 		contracts[_id].setState(CANCELED);
@@ -241,8 +241,8 @@ contract contractExecutor{
 			revert("Contract can be terminated with the client culpable only if more than one month has passed since last payment.");
 		_;
 	}
-	modifier onlyNotVerified(uint _id, bytes memory _leaf, bytes32[] memory _nodeHashes, bool[] memory _nodeOrientations){
-		if (StorageProof.verify(contracts[_id].getRootHash(), _leaf, _nodeHashes, _nodeOrientations)) revert("Merkle Proof was verified.");
+	modifier onlyNotVerified(uint _id, bytes32 _leaf, bytes32[] memory _proof){
+		if (StorageProof.verify2(contracts[_id].getRootHash(), _leaf, _proof)) revert("Merkle Proof was verified.");
 		_;
 	}
 	modifier onlyClient(uint _id){

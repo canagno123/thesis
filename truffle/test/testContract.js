@@ -1,26 +1,39 @@
-var demoContract = artifacts.require("demoContract");
-const assert = require("assert");
-const ganache = require("ganache-cli");
-const Web3 = require("web3");
-const web3 = new Web3(ganache.provider());
-const json = require("./../build/contracts/demoContract.json");
-const interface = json["abi"];
-const bytecode = json["bytecode"];
-let accounts;
-let contr;
-let manager;
+const StorageProof = artifacts.require('StorageProof')
+const { MerkleTree } = require('merkletreejs')
+const keccak256 = require('keccak256')
 
+const buf2hex = x => '0x'+x.toString('hex')
 
-contract('demoContract', () =>
-{
-    it('Should create a contract correctly',async () =>
-    {
-        demoContract.deployed().then( async instance => {
-        await instance.init.call("0xe8012AE4931Aa4a47c00edfB859d5057FC9864c2", "0x631168785E76007f0a2B19f963Efd0F3f8242d00", 1999, 1, 1);
-        let providerTest = instance.covenant().rootHash;
-        assert.equal(0, providerTest, "The manager is not the provider.");
-        })
-            //demoContract.deployed().
-        //then(instance => instance.init(manager, accounts[1], 1999, 1, 1).send({from: manager}))
+contract('Contracts', (accounts) => {
+  let contract
+
+  before('setup', async () => {
+    contract = await StorageProof.new()
+  })
+
+  context('StorageProof', () => {
+    describe('merkle proofs', () => {
+      it('should return true for valid merkle proof (example)', async () => {
+        const leaves = ['', '** Time measurement may be an issue. Epochs last 100 hours, unable to determine when the epoch started etc.', '',
+         '** leaf, nodeHashes, nodeOrientations must be provided in every call for a proof validation.'].map(v => keccak256(v))
+        const tree = new MerkleTree(leaves, keccak256, { sort: true })
+        const root = tree.getHexRoot()
+        const leaf = keccak256('** leaf, nodeHashes, nodeOrientations must be provided in every call for a proof validation.')
+        // console.log(root);  
+        // console.log(tree);
+        console.log(leaf);
+        const proof = tree.getHexProof(leaf)
+        console.log(proof);
+        const verified = await contract.verify2.call(root, leaf, proof)
+        assert.equal(verified, true)
+
+        const badLeaves = ['a', 'b', 'x', 'd'].map(v => keccak256(v))
+        const badTree = new MerkleTree(badLeaves, keccak256, { sort: true })
+        const badProof = badTree.getHexProof(leaf)
+
+        const badVerified = await contract.verify2.call(root, leaf, badProof)
+        assert.equal(badVerified, false)
+      })
+    })
+    })
     });
-});

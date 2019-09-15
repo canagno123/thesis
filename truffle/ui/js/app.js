@@ -161,9 +161,31 @@ App = {
     App.contracts.contractExecutor.deployed().then(function(instance) {
       contractExecutorInstance = instance;
     // Return Contract Information
-    return contractExecutorInstance.initContract(providerArray,client,App.ascii_to_hex(hash),collateral,price, {value:web3.toWei(collateral,"wei")});
+    return contractExecutorInstance.terminateMutual(id);
     }).then(function(result) {
-          console.log("Initiating contract..");
+          console.log("Terminating contract..");
+        }).catch(function(err) {
+          console.log(err.message);
+        });
+    });
+  },
+
+  getVerification: function(id, proof, provider, leaf) {
+    console.log("Contract Verification Button Clicked with: " + id + ", " + proof + ", " + leaf + ".");
+    var contractExecutorInstance;
+    proofBytes32 = App.formatProofArray(proof);
+    web3.eth.getAccounts(function(error, accounts) {
+    if (error) {
+      console.log(error);
+    }
+
+
+    App.contracts.contractExecutor.deployed().then(function(instance) {
+      contractExecutorInstance = instance;
+    // Return Contract Information
+    return contractExecutorInstance.getVerification(id, provider, leaf, proofBytes32);
+    }).then(function(result) {
+          console.log("Terminating contract..");
         }).catch(function(err) {
           console.log(err.message);
         });
@@ -215,6 +237,10 @@ App = {
     cell5 = document.createElement("td");
     cell6 = document.createElement("td");
     cell7 = document.createElement("td");
+    cell8 = document.createElement("td");
+    cell9 = document.createElement("td");
+    cell10 = document.createElement("td");
+    cell11 = document.createElement("td");
     textnode0=document.createTextNode(id);
     textnode1=document.createTextNode(App.clearAddressList(contract[0]));
     textnode2=document.createTextNode(contract[1].substring(2, 10));
@@ -236,6 +262,22 @@ App = {
     terminateLink.addEventListener('click', function() {
       App.terminateContract(id);
     }, false);
+    var proofLink = document.createElement("a");
+    var textnode8 = document.createTextNode("Verify Proof");
+    proofLink.style.color = "blue";
+    proofLink.appendChild(textnode8);
+    proofLink.addEventListener('click', function() {
+      App.getVerification(id, proofInput.value, leafInput.value, providerInput.value);
+    }, false);
+    var proofInput = document.createElement("INPUT");
+    proofInput.setAttribute("type", "text");
+    proofInput.style.width = "150px";
+    var leafInput = document.createElement("INPUT");
+    leafInput.setAttribute("type", "text");
+    leafInput.style.width = "80px";
+    var providerInput = document.createElement("INPUT");
+    providerInput.setAttribute("type", "text");
+    providerInput.style.width = "80px";
     cell0.appendChild(textnode0);
     cell1.appendChild(textnode1);
     cell2.appendChild(textnode2);
@@ -244,6 +286,10 @@ App = {
     cell5.appendChild(textnode5);
     cell6.appendChild(payLink);
     cell7.appendChild(terminateLink);
+    cell8.appendChild(proofLink);
+    cell9.appendChild(proofInput);
+    cell10.appendChild(leafInput);
+    cell11.appendChild(providerInput);
     row.appendChild(cell0);
     row.appendChild(cell1);
     row.appendChild(cell2);
@@ -252,6 +298,10 @@ App = {
     row.appendChild(cell5);
     row.appendChild(cell6);
     row.appendChild(cell7);
+    row.appendChild(cell8);
+    row.appendChild(cell9);
+    row.appendChild(cell10);
+    row.appendChild(cell11);
     tabBody.appendChild(row);
   },
 
@@ -344,7 +394,7 @@ App = {
         auctionExecutorInstance = instance;
       // Return Auction Information
       console.log("Getting information of auction with id " + id + " to create a contract.")
-      return auctionExecutorInstancontractcontractce.getAuctionInfo(id);
+      return auctionExecutorInstance.getAuctionInfo(id);
       }).then(function(result) {
         console.log("Initiating contract for: " + result[0] + " providers, " +
         result[1] + " client, " + result[2] + " price list, " +  result[8] + " collateral, " + 
@@ -463,6 +513,11 @@ App = {
 		  arr1.push(hex);
 	  }
 	  return arr1.join('');
+  },
+
+  formatProofArray(array){
+    console.log(array.split(","));
+    return array.split(",")
   },
 
   clearAddressList(providersList){
