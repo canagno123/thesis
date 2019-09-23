@@ -42,7 +42,7 @@ app.get('/download', function(req, res){
   var files = fs.readdirSync('/home/canagno/ethChain/truffle/ui/upload');
   console.log(files);
   var file = '/home/canagno/ethChain/truffle/ui/upload/';
-  file += files[0];
+  file += req.query.downloadFile;
   res.download(file); // Set disposition and send it.
 });
 var server = app.listen(3000, function () {

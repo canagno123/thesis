@@ -170,10 +170,10 @@ App = {
     });
   },
 
-  getVerification: function(id, proof, provider, leaf) {
-    console.log("Contract Verification Button Clicked with: " + id + ", " + proof + ", " + leaf + ".");
+  getVerification: function(id, proof) {
+    console.log("Contract Vrrification Button Clicked with id: " + id);
     var contractExecutorInstance;
-    proofBytes32 = App.formatProofArray(proof);
+
     web3.eth.getAccounts(function(error, accounts) {
     if (error) {
       console.log(error);
@@ -182,11 +182,35 @@ App = {
 
     App.contracts.contractExecutor.deployed().then(function(instance) {
       contractExecutorInstance = instance;
-    // Return Contract Information
-    return contractExecutorInstance.getVerification(id, provider, leaf, proofBytes32);
+    // Return Leaf Information
+    return contractExecutorInstance.getLeaf(id);
     }).then(function(result) {
-          console.log("Terminating contract..");
+          console.log("Getting Contract Leaf: " + result);
+          App.contracts.contractExecutor.deployed().then(function(instance) {
+            contractExecutorInstance = instance;
+            console.log("Verifying proof " + proof + ", " + result);
+          // Return Contract Information
+          return contractExecutorInstance.getVerification(id, App.formatProofArray(proof));
+          }).then(function(result) {
+                console.log("Successfull verification: " + result);
+                window.alert("Verification Successful");
+              }).catch(function(err) {
+                console.log("ERROR verifying contract with id: " + id);
+                console.log(err.message);
+                App.contracts.contractExecutor.deployed().then(function(instance) {
+                contractExecutorInstance = instance;
+                console.log("Verifying proof " + proof + ", " + result);
+                return contractExecutorInstance.terminateCulpProvider(id);
+                }).then(function(result) {
+                      console.log("Contract Terminated due to wrong verification: " + result);
+                      window.alert("Verification Failed! Terminating Contract...");
+                    }).catch(function(err) {
+                      console.log("ERROR terminating contract with id: " + id);
+                      console.log(err.message);
+                    });
+              });
         }).catch(function(err) {
+          console.log("ERROR getting contract leaf for id: " + id);
           console.log(err.message);
         });
     });
@@ -239,8 +263,6 @@ App = {
     cell7 = document.createElement("td");
     cell8 = document.createElement("td");
     cell9 = document.createElement("td");
-    cell10 = document.createElement("td");
-    cell11 = document.createElement("td");
     textnode0=document.createTextNode(id);
     textnode1=document.createTextNode(App.clearAddressList(contract[0]));
     textnode2=document.createTextNode(contract[1].substring(2, 10));
@@ -267,17 +289,11 @@ App = {
     proofLink.style.color = "blue";
     proofLink.appendChild(textnode8);
     proofLink.addEventListener('click', function() {
-      App.getVerification(id, proofInput.value, leafInput.value, providerInput.value);
+      App.getVerification(id, proofInput.value, contract[0]);
     }, false);
     var proofInput = document.createElement("INPUT");
     proofInput.setAttribute("type", "text");
     proofInput.style.width = "150px";
-    var leafInput = document.createElement("INPUT");
-    leafInput.setAttribute("type", "text");
-    leafInput.style.width = "80px";
-    var providerInput = document.createElement("INPUT");
-    providerInput.setAttribute("type", "text");
-    providerInput.style.width = "80px";
     cell0.appendChild(textnode0);
     cell1.appendChild(textnode1);
     cell2.appendChild(textnode2);
@@ -288,8 +304,6 @@ App = {
     cell7.appendChild(terminateLink);
     cell8.appendChild(proofLink);
     cell9.appendChild(proofInput);
-    cell10.appendChild(leafInput);
-    cell11.appendChild(providerInput);
     row.appendChild(cell0);
     row.appendChild(cell1);
     row.appendChild(cell2);
@@ -300,8 +314,6 @@ App = {
     row.appendChild(cell7);
     row.appendChild(cell8);
     row.appendChild(cell9);
-    row.appendChild(cell10);
-    row.appendChild(cell11);
     tabBody.appendChild(row);
   },
 
@@ -559,6 +571,11 @@ App = {
     console.log("unround: " + sum/priceList.length)
     console.log("round: " + Math.round(sum/priceList.length));
     return Math.round(sum/priceList.length);
+  },
+
+  tmp(){
+    var test = "0x7817bbf23515811db2092dab2ae2a6db0a234df12239e248ae8094ddf152497d";
+    console.log(test.toString(16).toUpperCase());
   }
 
 

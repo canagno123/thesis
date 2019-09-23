@@ -10,7 +10,8 @@ contract contractExecutor{
 	uint private id = 0;
 	mapping(uint => Contract) public contracts;
 	mapping(uint => uint) public paymentTime;
-	mapping(uint => mapping(address => uint)) verifications;
+	mapping(uint => string) public leafToVerify;
+	mapping(uint => uint) verifications;
     ProviderRating ratings;
 
 	//State Constants
@@ -37,9 +38,10 @@ contract contractExecutor{
 				{
 					revert("One of the providers is blacklisted.");
 				}
-				verifications[id][provider[i]] = now;
+				verifications[id] = now;
 			}
 			paymentTime[id] = now;
+			leafToVerify[id] = "";
 			id++;
 			initMessage = "Initialization successfull.";
 	}
@@ -110,18 +112,23 @@ contract contractExecutor{
 		}
 	}
 
-	function getVerification(uint _id, address payable _provider, bytes32 _leaf, bytes32[] memory _proof)
+	function getVerification(uint _id, bytes32[] memory _proof)
 	public
 	returns(bytes32 verificationMessage)
 	{
-		if (StorageProof.verify2(contracts[_id].getRootHash(), _leaf, _proof)){
-			verifications[_id][_provider] = now;
-			verificationMessage = "OK";
+		if (keccak256(abi.encodePacked(leafToVerify[_id])) != keccak256(abi.encodePacked(""))){
+			if (StorageProof.verify2(contracts[_id].getRootHash(), leafToVerify[_id], _proof)){
+				leafToVerify[_id] = "";
+				verifications[_id] = now;
+				verificationMessage = "OK";
+			}
+			else{
+				terminateCulpProvider(_id);
+				verificationMessage = "NOK";
+			}
 		}
-		else{
-			terminateCulpProvider(_id, _provider,  _leaf, _proof);
-			verificationMessage = "NOK";
-		}
+		else
+			revert("No leaf specified.");
 	}
 
 	function terminateCulpClient(uint _id)
@@ -142,25 +149,19 @@ contract contractExecutor{
 		return "OK";
 	}
 
-	function terminateCulpProvider(uint _id, address payable _provider, bytes32 _leaf, bytes32[] memory _proof)
+	function terminateCulpProvider(uint _id)
 	public
 	payable
-	onlyNotVerified(_id, _leaf, _proof)
 	returns(bytes32 terminationMessage)
 	{
 		contracts[_id].setState(CANCELED);
 		address payable[] memory provs = contracts[_id].getProviders();
 		uint coll = contracts[_id].getCollateralAmount();
 		//Level down culpable provider's rating
-		ratings.levelDownRating(_provider);
 		for (uint i = 0; i < provs.length; i++){
-			if (provs[i] != _provider){
-				//Level up the rest of the providers' rating
-				ratings.levelUpRating(provs[i]);
-				provs[i].transfer(coll / (provs.length));
-			}
-			address(contracts[_id].getClient()).transfer(coll / (provs.length));
+			ratings.levelDownRating(provs[i]);
 		}
+		address(contracts[_id].getClient()).transfer(coll / (provs.length));
 		invalidateContract(_id);
 		return "OK";
 	}
@@ -207,6 +208,21 @@ contract contractExecutor{
 		contracts[_id].setClient(0x0000000000000000000000000000000000000000);
 	}
 
+	function getLeaf(uint _id)
+	public
+	view
+	returns (string memory)
+	{
+		return leafToVerify[_id];
+	}
+
+	function setLeaf(uint _id, string memory _leaf)
+	public
+	onlyClient(_id)
+	{
+		leafToVerify[_id] = _leaf;
+	}
+
 	//Function that makes the contract able to accept payments
 	function () external payable {
 
@@ -241,12 +257,12 @@ contract contractExecutor{
 			revert("Contract can be terminated with the client culpable only if more than one month has passed since last payment.");
 		_;
 	}
-	modifier onlyNotVerified(uint _id, bytes32 _leaf, bytes32[] memory _proof){
+	modifier onlyNotVerified(uint _id, string memory _leaf, bytes32[] memory _proof){
 		if (StorageProof.verify2(contracts[_id].getRootHash(), _leaf, _proof)) revert("Merkle Proof was verified.");
 		_;
 	}
 	modifier onlyClient(uint _id){
-		if (msg.sender != contracts[_id].getClient()) revert("Only the client can pay the contract.");
+		if (msg.sender != contracts[_id].getClient()) revert("Only the client can access this method.");
         _;
 	}
 

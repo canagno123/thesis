@@ -14,25 +14,26 @@ contract('Contracts', (accounts) => {
   context('StorageProof', () => {
     describe('merkle proofs', () => {
       it('should return true for valid merkle proof (example)', async () => {
-        const leaves = ['', '** Time measurement may be an issue. Epochs last 100 hours, unable to determine when the epoch started etc.', '',
-         '** leaf, nodeHashes, nodeOrientations must be provided in every call for a proof validation.'].map(v => keccak256(v))
+        const leaves = ["** Time", "measurement may be an issue.", "Epochs last 100 hours, unable to determine when the epoch started etc."].map(v => keccak256(v))
         const tree = new MerkleTree(leaves, keccak256, { sort: true })
         const root = tree.getHexRoot()
-        const leaf = keccak256('** leaf, nodeHashes, nodeOrientations must be provided in every call for a proof validation.')
-        // console.log(root);  
-        // console.log(tree);
+        // const leaf = keccak256("** Time")
+        const leaf = "** Time"
+        const leafkecc = keccak256(leaf)
+        console.log(root);  
+        //console.log(tree);
         console.log(leaf);
-        const proof = tree.getHexProof(leaf)
+        const proof = tree.getHexProof(leafkecc)
         console.log(proof);
         const verified = await contract.verify2.call(root, leaf, proof)
         assert.equal(verified, true)
 
-        const badLeaves = ['a', 'b', 'x', 'd'].map(v => keccak256(v))
-        const badTree = new MerkleTree(badLeaves, keccak256, { sort: true })
-        const badProof = badTree.getHexProof(leaf)
+        // const badLeaves = ['a', 'b', 'x', 'd'].map(v => keccak256(v))
+        // const badTree = new MerkleTree(badLeaves, keccak256, { sort: true })
+        // const badProof = badTree.getHexProof(leaf)
 
-        const badVerified = await contract.verify2.call(root, leaf, badProof)
-        assert.equal(badVerified, false)
+        // const badVerified = await contract.verify2.call(root, leaf, badProof)
+        // assert.equal(badVerified, false)
       })
     })
     })

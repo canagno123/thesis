@@ -8,12 +8,12 @@ library StorageProof {
     // Size of a hash digest, in bytes.
     uint internal constant HASH_DIGEST_SIZE = 32;
 
-    function verify2(bytes32 root, bytes32 leaf, bytes32[] memory proof)
+    function verify2(bytes32 root, string memory leaf, bytes32[] memory proof)
     public
     pure
     returns (bool)
     {
-        bytes32 computedHash = leaf;
+        bytes32 computedHash = keccak256(abi.encodePacked(leaf));
 
         for (uint256 i = 0; i < proof.length; i++) {
         bytes32 proofElement = proof[i];

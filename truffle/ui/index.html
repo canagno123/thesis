@@ -32,29 +32,25 @@
             <h2>Get All Contracts and Auctions</h2>
             <button id="btn-allInfo" class="myButton">Get all Contracts and Auctions</button>
             
-            <h2>Choose a File to Upload</h2>
-            <form method="POST" enctype="multipart/form-data" action="/upload">
-                <input type="file" name ="filename">
-                <input type="submit" value="Upload">
+            <h2>Choose a File to Download</h2>
+            <form action="/download" method="get">
+                <input type="text" name="downloadFile">
+                <input type="submit" value="Download">
             </form>
-            <h2>Download Uploaded File</h2>
-            <button id="btn-download" class="myButton" onclick="window.location='/download';">Download</button>
             
         </div>
         <div class="left">
-            <h2>Initiate New Contract</h2>
-            <input type="text" id="provs" value="Providers"/>
-            <input type="text" id="client" value="Client"/>
-            <input type="text" id="hash" value="Root Hash"/>
-            <input type="text" id="collateral" value="Collateral Amount"/>
-            <input type="text" id="price" value="Price"/>
-            <button id="btn-init-contract" class="myButton">Initiate Contract</button>
-        
             <h2>Initiate New Auction</h2>
             <input type="text" id="provNum" value="Providers Number"/>
             <input type="text" id="fileSize" value="File Size (MB)"/>
             <input type="text" id="collateralAuction" value="Collateral Amount"/>
             <input type="text" id="hashAuction" value="Root Hash"/>
+            <h5>Choose a File to Upload</h5>
+            <form method="POST" enctype="multipart/form-data" action="javascript:alert('File Uploaded Successfully!');">
+                <input type="file" name ="filename">
+                <input type="submit" value="Upload">
+            </form>
+            <br/>
             <button id="btn-init-auction" class="myButton">Initiate Auction</button>
             <button id="btn-tmp" class="myButton">tmp</button>
         </div>
@@ -76,8 +72,6 @@
                 <th>Terminate</th>
                 <th>Verify</th>
                 <th>Merkle Proof</th>
-                <th>Proof Leaf</th>
-                <th>Proof Provider</th>
                 </tr>
                 </thead>
                 <tbody id="contractTableBody">
