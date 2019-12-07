@@ -7434,12 +7434,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0xb59c1A7CE7A62fc4C6Dd53Dd3335D1239B2d9246",
-      "transactionHash": "0xcb9707a85dc63e83f78334c02a66283e78645fc45446bbb52fd0771afbbd9979"
+      "address": "0x9752FE55E4477dD2abC54B4D0afaBD525AFE741C",
+      "transactionHash": "0xef6897958017d63c477e57a5069c2deff7df31ba38cb18dffb4ad07c222f523b"
     }
   },
   "schemaVersion": "3.0.1",
-  "updatedAt": "2019-09-23T17:42:44.119Z",
+  "updatedAt": "2019-11-28T07:52:47.927Z",
   "devdoc": {
     "methods": {}
   },
