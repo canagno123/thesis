@@ -13,6 +13,7 @@ contract contractExecutor{
 	mapping(uint => string) public leafToVerify;
 	mapping(uint => uint) verifications;
     ProviderRating ratings;
+	event setLeafEvent(uint _id, string _leaf);
 
 	//State Constants
 	uint8 constant public ACTIVE = 1;
@@ -221,6 +222,7 @@ contract contractExecutor{
 	onlyClient(_id)
 	{
 		leafToVerify[_id] = _leaf;
+		emit setLeafEvent(_id, _leaf);
 	}
 
 	//Function that makes the contract able to accept payments

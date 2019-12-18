@@ -42,7 +42,6 @@
         <div class="left">
             <h2>Initiate New Auction</h2>
             <input type="text" id="provNum" value="Providers Number"/>
-            <input type="text" id="fileSize" value="File Size (MB)"/>
             <input type="text" id="collateralAuction" value="Collateral Amount"/>
             <input type="text" id="hashAuction" value="Root Hash"/>
             <form method="POST" enctype="multipart/form-data" action="javascript:alert('File Uploaded Successfully!');">
@@ -71,6 +70,9 @@
                 <th>Terminate</th>
                 <th>Verify</th>
                 <th>Merkle Proof</th>
+                <th>Verification Requested</th>
+                <th>Set Leaf</th>
+                <th>Leaf</th>
                 </tr>
                 </thead>
                 <tbody id="contractTableBody">
@@ -108,7 +110,7 @@
     
     <script>
         document.getElementById("contractTableDiv").style.visibility = "hidden"; 
-        document.getElementById("auctionTableDiv").style.visibility = "hidden"; 
+        document.getElementById("auctionTableDiv").style.visibility = "hidden";
 
         $("#btn-contract").bind("click", function() {
             App.clearTable("contractTableBody");
@@ -159,14 +161,18 @@
 
         $("#btn-init-auction").bind("click", function() {
             var provNum = document.getElementById("provNum").value;
-            var fileSize = document.getElementById("fileSize").value;
             var collateralAuction = document.getElementById("collateralAuction").value;
             var hashAuction = document.getElementById("hashAuction").value;
-            App.initAuction(provNum, fileSize, collateralAuction, hashAuction);
+            App.initAuction(provNum, collateralAuction, hashAuction);
         });
 
         $("#btn-tmp").bind("click", function() {
-            console.log("#fileName");
+            var str = ".0xb5abbe6fee02f95e9db53d8b2ad61f9f0a258d1a5a7719a7a971b557e4b80002";
+            
+            if (str.startsWith("."))
+                console.log("yes");
+            else
+                console.log("no");
         });
 
         

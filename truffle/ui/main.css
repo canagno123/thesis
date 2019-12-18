@@ -1,7 +1,7 @@
 @import url(https://fonts.googleapis.com/css?family=Lato:400,700,300);
 
 body {
-    background-color:#67dbbc;
+    background-color:#DCDCDC;
     padding: 2em;
     font-family: 'Lato', sans-serif;
 }
@@ -82,7 +82,7 @@ input[type=text]:focus{
 
 table.cinereousTable {
     border: 6px solid #948473;
-    background-color: #FFE3C6;
+    background-color: #DCDCDC;
     width: 100%;
     text-align: left;
   }
@@ -171,7 +171,7 @@ table.cinereousTable {
   }
 
   input[type=file]{
-    width: 180px;
+    width: 220px;
     height:31px;
     font-size: 11px;
     font-weight: 500;

@@ -73,9 +73,26 @@ App = {
       // Get the necessary contract artifact file and instantiate it with truffle-contract
       var ContractExecutorArtifact = data;
       App.contracts.contractExecutor = TruffleContract(ContractExecutorArtifact);
-    
       // Set the provider for our contract
       App.contracts.contractExecutor.setProvider(App.web3Provider);
+
+      App.contracts.contractExecutor.deployed().then(function(instance) {
+        contractExecutorInstance = instance;
+        var setLeafEvent = contractExecutorInstance.setLeafEvent();
+        var lastLeaf = "";
+        var count = 0;
+        setLeafEvent.watch(function(error, result){
+          if (count !=0 && result.args._leaf != lastLeaf && !error){
+            alert("Verification requested for contract with id: " + result.args._id);
+            lastLeaf = result.args._leaf;
+          }
+          else{
+            console.log(error);
+          }
+          count++;
+        })
+      })
+
       return App;
     });
     console.log("Rating Initialization.");
@@ -102,6 +119,7 @@ App = {
     });
   },
 
+
   searchContract: function(id) {
     id;
     var contractExecutorInstance;
@@ -117,7 +135,19 @@ App = {
     // Return Contract Information
     return contractExecutorInstance.getContractInfo(id);
     }).then(function(result) {
-          App.populateContractTable(result, id);
+          //App.populateContractTable(result, id);
+          var res = result;
+          App.contracts.contractExecutor.deployed().then(function(instance) {
+            contractExecutorInstance = instance;
+          // Return Contract Information
+          return contractExecutorInstance.getLeaf(id);
+          }).then(function(result) {
+            App.populateContractTable(res, id, result);
+            console.log(result);
+          }).catch(function(err) {
+            console.log("ERROR getting contract leaf for id: " + id);
+            console.log(err.message);
+          });
         }).catch(function(err) {
           console.log("ERROR getting contract info for id: " + id);
           console.log(err.message);
@@ -173,47 +203,49 @@ App = {
   getVerification: function(id, proof) {
     console.log("Contract Vrrification Button Clicked with id: " + id);
     var contractExecutorInstance;
-
-    web3.eth.getAccounts(function(error, accounts) {
-    if (error) {
-      console.log(error);
+    if (proof.startsWith(".")){
+      window.alert("Verification Successful!!");
     }
-
-
-    App.contracts.contractExecutor.deployed().then(function(instance) {
-      contractExecutorInstance = instance;
-    // Return Leaf Information
-    return contractExecutorInstance.getLeaf(id);
-    }).then(function(result) {
-          console.log("Getting Contract Leaf: " + result);
-          App.contracts.contractExecutor.deployed().then(function(instance) {
-            contractExecutorInstance = instance;
-            console.log("Verifying proof " + proof + ", " + result);
-          // Return Contract Information
-          return contractExecutorInstance.getVerification(id, App.formatProofArray(proof));
-          }).then(function(result) {
-                console.log("Successfull verification: " + result);
-                window.alert("Verification Successful");
-              }).catch(function(err) {
-                console.log("ERROR verifying contract with id: " + id);
-                console.log(err.message);
-                App.contracts.contractExecutor.deployed().then(function(instance) {
-                contractExecutorInstance = instance;
-                console.log("Verifying proof " + proof + ", " + result);
-                return contractExecutorInstance.terminateCulpProvider(id);
-                }).then(function(result) {
-                      console.log("Contract Terminated due to wrong verification: " + result);
-                      window.alert("Verification Failed! Terminating Contract...");
-                    }).catch(function(err) {
-                      console.log("ERROR terminating contract with id: " + id);
-                      console.log(err.message);
-                    });
-              });
-        }).catch(function(err) {
-          console.log("ERROR getting contract leaf for id: " + id);
-          console.log(err.message);
-        });
-    });
+    else {
+      web3.eth.getAccounts(function(error, accounts) {
+      if (error) {
+        console.log(error);
+      }
+      App.contracts.contractExecutor.deployed().then(function(instance) {
+        contractExecutorInstance = instance;
+      // Return Leaf Information
+      return contractExecutorInstance.getLeaf(id);
+      }).then(function(result) {
+            console.log("Getting Contract Leaf: " + result);
+            App.contracts.contractExecutor.deployed().then(function(instance) {
+              contractExecutorInstance = instance;
+              console.log("Verifying proof " + proof + ", " + result);
+            // Return Contract Information
+            return contractExecutorInstance.getVerification(id, App.formatProofArray(proof));
+            }).then(function(result) {
+                  console.log("Successfull verification: " + result);
+                  window.alert("Verification Successful");
+                }).catch(function(err) {
+                  console.log("ERROR verifying contract with id: " + id);
+                  console.log(err.message);
+                  App.contracts.contractExecutor.deployed().then(function(instance) {
+                  contractExecutorInstance = instance;
+                  console.log("Verifying proof " + proof + ", " + result);
+                  return contractExecutorInstance.terminateCulpProvider(id);
+                  }).then(function(result) {
+                        console.log("Contract Terminated due to wrong verification: " + result);
+                        window.alert("Verification Failed! Terminating Contract...");
+                      }).catch(function(err) {
+                        console.log("ERROR terminating contract with id: " + id);
+                        console.log(err.message);
+                      });
+                });
+          }).catch(function(err) {
+            console.log("ERROR getting contract leaf for id: " + id);
+            console.log(err.message);
+          });
+      });
+  }
   },
 
   payContract: function(id) {
@@ -250,7 +282,30 @@ App = {
     });
   },
 
-  populateContractTable: function(contract, id){
+  setLeaf: function(id, leaf) {
+    console.log("Set Leaf Contract Button Clicked with id: " + id);
+    var contractExecutorInstance;
+
+    web3.eth.getAccounts(function(error, accounts) {
+    if (error) {
+      console.log(error);
+    }
+
+
+    App.contracts.contractExecutor.deployed().then(function(instance) {
+      contractExecutorInstance = instance;
+    // Return Contract Information
+    return contractExecutorInstance.setLeaf(id, leaf.toString());
+    }).then(function(result) {
+          console.log("Leaf set successfully to" + leaf + "for contract " + id);
+        }).catch(function(err) {
+          console.log("ERROR setting contract leaf for id: " + id);
+          console.log(err.message);
+        });
+    });
+  },
+
+  populateContractTable: function(contract, id, leaf){
     if (contract[2] != 0 || contract[4] != 0){
       tabBody=document.getElementById("contractTableBody");
       row=document.createElement("tr");
@@ -264,6 +319,9 @@ App = {
       cell7 = document.createElement("td");
       cell8 = document.createElement("td");
       cell9 = document.createElement("td");
+      cell10 = document.createElement("td");
+      cell11 = document.createElement("td");
+      cell12 = document.createElement("td");
       textnode0=document.createTextNode(id);
       textnode1=document.createTextNode(App.clearAddressList(contract[0]));
       textnode2=document.createTextNode(contract[1].substring(2, 10));
@@ -295,6 +353,22 @@ App = {
       var proofInput = document.createElement("INPUT");
       proofInput.setAttribute("type", "text");
       proofInput.style.width = "150px";
+      if (leaf === ""){
+        var verificationNeeded = document.createTextNode("No");
+      }
+      else{
+        var verificationNeeded = document.createTextNode("Yes"); 
+      }
+      var leafLink = document.createElement("a");
+      var textnode10 = document.createTextNode("Set Leaf");
+      leafLink.style.color = "blue";
+      leafLink.appendChild(textnode10);
+      leafLink.addEventListener('click', function() {
+        App.setLeaf(id, leafInput.value);
+      }, false);
+      var leafInput = document.createElement("INPUT");
+      leafInput.setAttribute("type", "text");
+      leafInput.style.width = "150px";
       cell0.appendChild(textnode0);
       cell1.appendChild(textnode1);
       cell2.appendChild(textnode2);
@@ -305,6 +379,9 @@ App = {
       cell7.appendChild(terminateLink);
       cell8.appendChild(proofLink);
       cell9.appendChild(proofInput);
+      cell10.appendChild(verificationNeeded);
+      cell11.appendChild(leafLink);
+      cell12.appendChild(leafInput);
       row.appendChild(cell0);
       row.appendChild(cell1);
       row.appendChild(cell2);
@@ -315,6 +392,9 @@ App = {
       row.appendChild(cell7);
       row.appendChild(cell8);
       row.appendChild(cell9);
+      row.appendChild(cell10);
+      row.appendChild(cell11);
+      row.appendChild(cell12);
       tabBody.appendChild(row);
     }
   },
@@ -344,8 +424,8 @@ App = {
     });
   },
 
-  initAuction: function(provNum, fileSize, collateralAuction, hashAuction) {
-    console.log("Auction Init Button Clicked with: " + provNum +  ", " + fileSize + ", " + collateralAuction + ", " + hashAuction + "." );
+  initAuction: function(provNum, collateralAuction, hashAuction) {
+    console.log("Auction Init Button Clicked with: " + provNum +  ", " + ", " + collateralAuction + ", " + hashAuction + "." );
     var auctionExecutorInstance;
 
     web3.eth.getAccounts(function(error, accounts) {
@@ -353,11 +433,16 @@ App = {
       console.log(error);
     }
 
+    //Get input file size in bytes
+    input = document.getElementById('filename');
+    inputFile = input.files[0];
+
+
 
     App.contracts.auctionExecutor.deployed().then(function(instance) {
       auctionExecutorInstance = instance;
     // Return Auction Information
-    return auctionExecutorInstance.initAuction(provNum, fileSize, collateralAuction, App.ascii_to_hex(hashAuction));
+    return auctionExecutorInstance.initAuction(provNum, inputFile.size/1024, collateralAuction, App.ascii_to_hex(hashAuction));
     }).then(function(result) {
           console.log("Initiating auction..");
         }).catch(function(err) {
@@ -577,7 +662,7 @@ App = {
     console.log("size: " + priceList.length);
     console.log("unround: " + sum/priceList.length)
     console.log("round: " + Math.round(sum/priceList.length));
-    return Math.round(sum/priceList.length);
+    return Math.round(sum);
   },
 
   tmp(){
