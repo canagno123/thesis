@@ -50,7 +50,7 @@ contract contractExecutor{
 	function getContractInfo(uint _id)
 	public
 	view
-	returns(address payable[] memory tempProvider, address payable tempClient, uint tempPrice, bytes32 infoMessage, uint tempCollateral, uint tempTime, uint temppTime, bytes32 tempState)
+	returns(address payable[] memory tempProvider, address payable tempClient, uint tempPrice, bytes32 infoMessage, uint tempCollateral, uint tempTime, uint temppTime, bytes32 tempState, bytes32 tempRoot)
 	{
 		if (contracts[_id].getClient() != 0x0000000000000000000000000000000000000000){
 			tempProvider = contracts[_id].getProviders();
@@ -60,6 +60,7 @@ contract contractExecutor{
 			temppTime = paymentTime[_id];
 			tempCollateral = contracts[_id].getCollateralAmount();
 			tempState = returnStringStatus(contracts[_id].getState());
+			tempRoot = contracts[_id].getRootHash();
 			infoMessage = "OK";
 		}
 		else

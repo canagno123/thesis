@@ -14,14 +14,12 @@ contract('Contracts', (accounts) => {
   context('StorageProof', () => {
     describe('merkle proofs', () => {
       it('should return true for valid merkle proof (example)', async () => {
-        const leaves = ["** Time", "measurement may be an issue.", "Epochs last 100 hours, unable to determine when the epoch started etc."].map(v => keccak256(v))
+        const leaves = ["** Time measurement may be an ","issue. Epochs last 100 hours, ","unable to determine when the e","poch started etc.","** leaf, nodeHashes, nodeOrien","tations must be provided in ev","ery call for a proof validatio","n."].map(v => keccak256(v))
         const tree = new MerkleTree(leaves, keccak256, { sort: true })
         const root = tree.getHexRoot()
-        // const leaf = keccak256("** Time")
-        const leaf = "** Time"
+        const leaf = "** Time measurement may be an "
         const leafkecc = keccak256(leaf)
         console.log(root);  
-        //console.log(tree);
         console.log(leaf);
         const proof = tree.getHexProof(leafkecc)
         console.log(proof);

@@ -201,7 +201,7 @@ App = {
   },
 
   getVerification: function(id, proof) {
-    console.log("Contract Vrrification Button Clicked with id: " + id);
+    console.log("Contract Verification Button Clicked with id: " + id);
     var contractExecutorInstance;
     if (proof.startsWith(".")){
       window.alert("Verification Successful!!");
@@ -224,21 +224,10 @@ App = {
             return contractExecutorInstance.getVerification(id, App.formatProofArray(proof));
             }).then(function(result) {
                   console.log("Successfull verification: " + result);
-                  window.alert("Verification Successful");
+                  window.alert("Verification Submitted!");
                 }).catch(function(err) {
                   console.log("ERROR verifying contract with id: " + id);
                   console.log(err.message);
-                  App.contracts.contractExecutor.deployed().then(function(instance) {
-                  contractExecutorInstance = instance;
-                  console.log("Verifying proof " + proof + ", " + result);
-                  return contractExecutorInstance.terminateCulpProvider(id);
-                  }).then(function(result) {
-                        console.log("Contract Terminated due to wrong verification: " + result);
-                        window.alert("Verification Failed! Terminating Contract...");
-                      }).catch(function(err) {
-                        console.log("ERROR terminating contract with id: " + id);
-                        console.log(err.message);
-                      });
                 });
           }).catch(function(err) {
             console.log("ERROR getting contract leaf for id: " + id);
@@ -348,7 +337,7 @@ App = {
       proofLink.style.color = "blue";
       proofLink.appendChild(textnode8);
       proofLink.addEventListener('click', function() {
-        App.getVerification(id, proofInput.value, contract[0]);
+        App.getVerification(id, proofInput.value);
       }, false);
       var proofInput = document.createElement("INPUT");
       proofInput.setAttribute("type", "text");
@@ -424,8 +413,8 @@ App = {
     });
   },
 
-  initAuction: function(provNum, collateralAuction, hashAuction) {
-    console.log("Auction Init Button Clicked with: " + provNum +  ", " + ", " + collateralAuction + ", " + hashAuction + "." );
+  initAuction: function(provNum, collateralAuction, fileContents) {
+    console.log("Auction Init Button Clicked with: " + provNum +  ", " + collateralAuction + "." );
     var auctionExecutorInstance;
 
     web3.eth.getAccounts(function(error, accounts) {
@@ -436,13 +425,17 @@ App = {
     //Get input file size in bytes
     input = document.getElementById('filename');
     inputFile = input.files[0];
-
-
+    //Split inputFile into array of leaves
+    var leaves = fileContents.match(/.{1,30}/g);
+    console.log("app leaves: " + leaves);
+    //Create Merkle Tree and get Root Hex
+    var root = createRootHex(leaves);
+    console.log(root);
 
     App.contracts.auctionExecutor.deployed().then(function(instance) {
       auctionExecutorInstance = instance;
     // Return Auction Information
-    return auctionExecutorInstance.initAuction(provNum, inputFile.size/1024, collateralAuction, App.ascii_to_hex(hashAuction));
+    return auctionExecutorInstance.initAuction(provNum, inputFile.size/1024, collateralAuction, root);
     }).then(function(result) {
           console.log("Initiating auction..");
         }).catch(function(err) {

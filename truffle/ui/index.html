@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" type="text/css" href="main.css">
 
+    <script src="./moduleBundle.js"></script>
     <script src="./node_modules/web3/dist/web3.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -43,7 +44,7 @@
             <h2>Initiate New Auction</h2>
             <input type="text" id="provNum" value="Providers Number"/>
             <input type="text" id="collateralAuction" value="Collateral Amount"/>
-            <input type="text" id="hashAuction" value="Root Hash"/>
+            <!--<input type="text" id="hashAuction" value="Root Hash"/>-->
             <form method="POST" enctype="multipart/form-data" action="javascript:alert('File Uploaded Successfully!');">
                 <input type="file" name ="filename" id="filename">
                 <input type="submit" value="Upload">
@@ -162,17 +163,29 @@
         $("#btn-init-auction").bind("click", function() {
             var provNum = document.getElementById("provNum").value;
             var collateralAuction = document.getElementById("collateralAuction").value;
-            var hashAuction = document.getElementById("hashAuction").value;
-            App.initAuction(provNum, collateralAuction, hashAuction);
+            //var hashAuction = document.getElementById("hashAuction").value;
+            var file = document.getElementById("filename").files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.readAsText(file, "UTF-8");
+                reader.onload = function (evt) {
+                    var fileContents = evt.target.result;
+                    console.log(fileContents);
+                    App.initAuction(provNum, collateralAuction, fileContents);
+                }
+                reader.onerror = function (evt) {
+                    alert("Error reading file, please reupload and try again.");
+                }
+            }
+            else{
+                alert("No file uploaded, please upload one and try again.");
+            }
+            
         });
 
         $("#btn-tmp").bind("click", function() {
-            var str = ".0xb5abbe6fee02f95e9db53d8b2ad61f9f0a258d1a5a7719a7a971b557e4b80002";
-            
-            if (str.startsWith("."))
-                console.log("yes");
-            else
-                console.log("no");
+            var root = createRootHex();
+            console.log(root);
         });
 
         
