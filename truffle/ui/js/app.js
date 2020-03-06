@@ -2,6 +2,7 @@ App = {
   web3Provider: null,
   contracts: {},
   resContracts: null,
+  verified: true,
 
   init: async function() {
     console.log("App Initialization.");
@@ -79,17 +80,19 @@ App = {
       App.contracts.contractExecutor.deployed().then(function(instance) {
         contractExecutorInstance = instance;
         var setLeafEvent = contractExecutorInstance.setLeafEvent();
-        var lastLeaf = "";
         var count = 0;
         setLeafEvent.watch(function(error, result){
-          if (count !=0 && result.args._leaf != lastLeaf && !error){
+          if (count != 0 && !error){
             alert("Verification requested for contract with id: " + result.args._id);
             lastLeaf = result.args._leaf;
+            count++;
           }
-          else{
+          else if (count ==0){
+            count++;
+          }
+          else if (error){
             console.log(error);
           }
-          count++;
         })
       })
 
@@ -143,7 +146,6 @@ App = {
           return contractExecutorInstance.getLeaf(id);
           }).then(function(result) {
             App.populateContractTable(res, id, result);
-            console.log(result);
           }).catch(function(err) {
             console.log("ERROR getting contract leaf for id: " + id);
             console.log(err.message);
@@ -237,37 +239,110 @@ App = {
   }
   },
 
+  checkVerification: function(id) {
+    var verified;
+    web3.eth.getAccounts(function(error, accounts) {
+      if (error) {
+        console.log(error);
+      }
+  
+      App.contracts.contractExecutor.deployed().then(function(instance) {
+        contractExecutorInstance = instance;
+      // Return Contract Information
+      return contractExecutorInstance.getLeaf(id);
+      }).then(function(result) {
+            console.log("Leaf got successfully: \"" + result + "\" for contract " + id);
+            if (result != "")
+              verified = false;
+            else
+              verified = true;
+          }).catch(function(err) {
+            console.log("ERROR getting contract leaf for id: " + id);
+            console.log(err.message);
+          });
+      });
+      return verified;
+  },
+
   payContract: function(id) {
     console.log("Pay Contract Button Clicked with id: " + id);
     var contractExecutorInstance;
-
     web3.eth.getAccounts(function(error, accounts) {
     if (error) {
       console.log(error);
     }
-
-
     App.contracts.contractExecutor.deployed().then(function(instance) {
       contractExecutorInstance = instance;
     // Return Contract Information
-    return contractExecutorInstance.getContractInfo(id);
+    return contractExecutorInstance.getLeaf(id);
     }).then(function(result) {
-          console.log("Getting Contract Price: " + result[2]);
+        console.log("Leaf got successfully: \"" + result + "\" for contract " + id);
+        if (result == ""){
           App.contracts.contractExecutor.deployed().then(function(instance) {
             contractExecutorInstance = instance;
-            console.log("Paying contract " + id + ", " + result[2] + " wei.");
           // Return Contract Information
-          return contractExecutorInstance.pay(id, {value:web3.toWei(result[2],"wei")});
+          return contractExecutorInstance.getContractInfo(id);
           }).then(function(result) {
-                console.log("Successfull Payment: " + result);
+                console.log("Getting Contract Price: " + result[2]);
+                addressProvider = result[0][0];
+                addressClient = result[1];
+                console.log(addressProvider);
+                console.log(addressClient);
+                var providerBalanceBefore;
+                var clientBalanceBefore;
+
+                web3.eth.getBalance(addressClient, function (error, result) {
+                  if (!error) {
+                    clientBalanceBefore = result;
+                    console.log("Client's balance before the payment  is"+ ': ' + result);
+                  };
+                });
+
+                web3.eth.getBalance(addressProvider, function (error, result) {
+                  if (!error) {
+                    providerBalanceBefore = result;
+                    console.log("Provider's balance before the payment is"+ ': ' + result);
+                  };
+                });
+
+                App.contracts.contractExecutor.deployed().then(function(instance) {
+                  contractExecutorInstance = instance;
+                  console.log("Paying contract " + id + ", " + result[2] + " wei.");
+                // Return Contract Information
+                //return contractExecutorInstance.pay(id, {value:web3.toWei(result[2],"wei")});
+                return contractExecutorInstance.pay(id, {value:result[2]});
+                }).then(function(result) {
+                      console.log("Successfull Payment: " + result);
+                      alert("Payment for contract with id: " + id + ", completed successfully.")
+                      web3.eth.getBalance(addressClient, function (error, result) {
+                        if (!error) {
+                          console.log("Client's balance after the payment  is"+ ': ' + result);
+                          alert("Client balance before payment: " + clientBalanceBefore + " and after payment: " + result);
+                        };
+                      });
+            
+                      web3.eth.getBalance(addressProvider, function (error, result) {
+                        if (!error) {
+                          console.log("Provider's balance after the payment is"+ ': ' + result);
+                          alert("Provider balance before payment: " + providerBalanceBefore + " and after payment: " + result);
+                        };
+                      });
+                    }).catch(function(err) {
+                      console.log("ERROR paying contract with id: " + id);
+                      console.log(err.message);
+                    });
               }).catch(function(err) {
-                console.log("ERROR paying contract with id: " + id);
+                console.log("ERROR getting contract price for id: " + id);
                 console.log(err.message);
               });
-        }).catch(function(err) {
-          console.log("ERROR getting contract price for id: " + id);
-          console.log(err.message);
-        });
+        }
+        else{
+          alert("No verification submitted for the leaf specified.");
+        }
+          }).catch(function(err) {
+            console.log("ERROR getting contract leaf for id: " + id);
+            console.log(err.message);
+          });
     });
   },
 
@@ -286,7 +361,31 @@ App = {
     // Return Contract Information
     return contractExecutorInstance.setLeaf(id, leaf.toString());
     }).then(function(result) {
-          console.log("Leaf set successfully to" + leaf + "for contract " + id);
+          console.log("Leaf set successfully to " + leaf + " for contract " + id);
+        }).catch(function(err) {
+          console.log("ERROR setting contract leaf for id: " + id);
+          console.log(err.message);
+        });
+    });
+  },
+
+  getLeaf: function(id) {
+    console.log("Get Leaf Contract Button Clicked with id: " + id);
+    var contractExecutorInstance;
+
+    web3.eth.getAccounts(function(error, accounts) {
+    if (error) {
+      console.log(error);
+    }
+
+
+    App.contracts.contractExecutor.deployed().then(function(instance) {
+      contractExecutorInstance = instance;
+    // Return Contract Information
+    return contractExecutorInstance.getLeaf(id);
+    }).then(function(result) {
+          console.log("Leaf got successfully: " + result + " for contract " + id);
+          alert("Leaf set is \"" + result + "\"");
         }).catch(function(err) {
           console.log("ERROR setting contract leaf for id: " + id);
           console.log(err.message);
@@ -311,6 +410,7 @@ App = {
       cell10 = document.createElement("td");
       cell11 = document.createElement("td");
       cell12 = document.createElement("td");
+      cell13 = document.createElement("td");
       textnode0=document.createTextNode(id);
       textnode1=document.createTextNode(App.clearAddressList(contract[0]));
       textnode2=document.createTextNode(contract[1].substring(2, 10));
@@ -357,7 +457,14 @@ App = {
       }, false);
       var leafInput = document.createElement("INPUT");
       leafInput.setAttribute("type", "text");
-      leafInput.style.width = "150px";
+      leafInput.style.width = "100px";
+      var getLeafLink = document.createElement("a");
+      var textnode11 = document.createTextNode("Get Leaf");
+      getLeafLink.style.color = "blue";
+      getLeafLink.appendChild(textnode11);
+      getLeafLink.addEventListener('click', function() {
+        App.getLeaf(id);
+      }, false);
       cell0.appendChild(textnode0);
       cell1.appendChild(textnode1);
       cell2.appendChild(textnode2);
@@ -371,6 +478,7 @@ App = {
       cell10.appendChild(verificationNeeded);
       cell11.appendChild(leafLink);
       cell12.appendChild(leafInput);
+      cell13.appendChild(getLeafLink)
       row.appendChild(cell0);
       row.appendChild(cell1);
       row.appendChild(cell2);
@@ -384,6 +492,7 @@ App = {
       row.appendChild(cell10);
       row.appendChild(cell11);
       row.appendChild(cell12);
+      row.appendChild(cell13);
       tabBody.appendChild(row);
     }
   },
@@ -404,7 +513,6 @@ App = {
       // Return Auction Information
     return auctionExecutorInstance.getAuctionInfo(id);
     }).then(function(result) {
-      console.log("Normal Call Auction" + result[1]);
       App.populateAuctionTable(result, id);
       }).catch(function(err) {
         console.log("ERROR getting auction info for id: " + id);
@@ -426,7 +534,7 @@ App = {
     input = document.getElementById('filename');
     inputFile = input.files[0];
     //Split inputFile into array of leaves
-    var leaves = fileContents.match(/.{1,30}/g);
+    var leaves = fileContents.match(/.{1,150}/g);
     console.log("app leaves: " + leaves);
     //Create Merkle Tree and get Root Hex
     var root = createRootHex(leaves);
@@ -435,7 +543,7 @@ App = {
     App.contracts.auctionExecutor.deployed().then(function(instance) {
       auctionExecutorInstance = instance;
     // Return Auction Information
-    return auctionExecutorInstance.initAuction(provNum, inputFile.size/1024, collateralAuction, root);
+    return auctionExecutorInstance.initAuction(provNum, Math.round(inputFile.size/1024/1024), collateralAuction, root);
     }).then(function(result) {
           console.log("Initiating auction..");
         }).catch(function(err) {
@@ -445,7 +553,6 @@ App = {
   },
 
   bidAuction: function(id, bidValue){
-    console.log("Easy: " + id + " " + "value: " + bidValue);
     console.log("Auction Button Clicked with id: " + id);
     var auctionExecutorInstance;
 
@@ -467,7 +574,6 @@ App = {
   },
 
   completeAuction: function(id){
-    console.log("Easy completion: " + id);
     console.log("Auction Completion Button Clicked with id: " + id);
     var auctionExecutorInstance;
     var contractExecutorInstance;
@@ -498,6 +604,7 @@ App = {
         return contractExecutorInstance.initContract(result[0],result[1],result[9],result[8], App.getTableAverage(result[2]), {value:web3.toWei(result[8],"wei")});
         }).then(function(result) {
           console.log("Contract succesfully initiated.")
+          alert("Auction completed, and associated contract has been initiated.");
         }).catch(function(err) {
           console.log(err.message);
           });
@@ -521,7 +628,7 @@ App = {
       cell4 = document.createElement("td");
       cell5 = document.createElement("td");
       cell6 = document.createElement("td");
-      cell7 = document.createElement("td");
+      //cell7 = document.createElement("td");
       cell8 = document.createElement("td");
       cell9 = document.createElement("td");
       cell10 = document.createElement("td");
@@ -533,7 +640,7 @@ App = {
       textnode4=document.createTextNode(auction[3]);
       textnode5=document.createTextNode(auction[7]);
       textnode6=document.createTextNode(auction[8]);
-      textnode7=document.createTextNode(App.hex_to_ascii(auction[9]));
+      //textnode7=document.createTextNode(App.hex_to_ascii(auction[9]));
       var state = App.hex_to_ascii(auction[6]);
       textnode8=document.createTextNode(state);
       var bidLink = document.createElement("a");
@@ -552,6 +659,9 @@ App = {
           console.log("state is: " + state.trim());
           App.completeAuction(id);
         }
+        else {
+          alert("Auction has already been completed.");
+        }
       }, false);
       var bidInput = document.createElement("INPUT");
       bidInput.setAttribute("type", "text");
@@ -562,7 +672,7 @@ App = {
       cell4.appendChild(textnode4);
       cell5.appendChild(textnode5);
       cell6.appendChild(textnode6);
-      cell7.appendChild(textnode7);
+      //cell7.appendChild(textnode7);
       cell8.appendChild(textnode8);
       cell9.appendChild(bidLink);
       cell10.appendChild(bidInput);
@@ -574,7 +684,7 @@ App = {
       row.appendChild(cell4);
       row.appendChild(cell5);
       row.appendChild(cell6);
-      row.appendChild(cell7);
+      // row.appendChild(cell7);
       row.appendChild(cell8);
       row.appendChild(cell9);
       row.appendChild(cell10);
@@ -651,10 +761,6 @@ App = {
     for (var i=0, l = priceList.length; i < l; i++){
       sum += parseInt(priceList[i]);
     }
-    console.log("Sum: " + sum);
-    console.log("size: " + priceList.length);
-    console.log("unround: " + sum/priceList.length)
-    console.log("round: " + Math.round(sum/priceList.length));
     return Math.round(sum);
   },
 

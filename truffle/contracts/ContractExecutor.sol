@@ -104,7 +104,7 @@ contract contractExecutor{
 			uint providerBalance = currProv.balance;
 			currProv.transfer(msg.value / provs.length);
 			if (currProv.balance >= providerBalance + (contracts[_id].getPrice() / provs.length)){
-					paymentTime[_id] = now;//If the payment is successfull, set the payment time to now.
+					paymentTime[_id] = now; //If the payment is successfull, set the payment time to now.
 					paymentMessage = "Payment successfull.";
 			}
 			else {
