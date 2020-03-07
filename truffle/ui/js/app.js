@@ -202,6 +202,28 @@ App = {
     });
   },
 
+  checkPayment: function(id) {
+    console.log("Check Payment Button Clicked with: " + id + ".");
+    var contractExecutorInstance;
+
+    web3.eth.getAccounts(function(error, accounts) {
+    if (error) {
+      console.log(error);
+    }
+
+
+    App.contracts.contractExecutor.deployed().then(function(instance) {
+      contractExecutorInstance = instance;
+    // Return Contract Information
+    return contractExecutorInstance.terminateCulpClient(id);
+    }).then(function(result) {
+          console.log("Checking if client has paid.");
+        }).catch(function(err) {
+          console.log(err.message);
+        });
+    });
+  },
+
   getVerification: function(id, proof) {
     console.log("Contract Verification Button Clicked with id: " + id);
     var contractExecutorInstance;
@@ -411,6 +433,7 @@ App = {
       cell11 = document.createElement("td");
       cell12 = document.createElement("td");
       cell13 = document.createElement("td");
+      cell14 = document.createElement("td");
       textnode0=document.createTextNode(id);
       textnode1=document.createTextNode(App.clearAddressList(contract[0]));
       textnode2=document.createTextNode(contract[1].substring(2, 10));
@@ -432,6 +455,13 @@ App = {
       terminateLink.addEventListener('click', function() {
         App.terminateContract(id);
       }, false);
+      var checkPaymentLink = document.createElement("a");
+      var textnodePayment = document.createTextNode("Check Payment");
+      checkPaymentLink.style.color = "blue";
+      checkPaymentLink.appendChild(textnodePayment);
+      checkPaymentLink.addEventListener('click', function() {
+        App.checkPayment(id);
+      }, false);
       var proofLink = document.createElement("a");
       var textnode8 = document.createTextNode("Verify Proof");
       proofLink.style.color = "blue";
@@ -441,7 +471,7 @@ App = {
       }, false);
       var proofInput = document.createElement("INPUT");
       proofInput.setAttribute("type", "text");
-      proofInput.style.width = "150px";
+      proofInput.style.width = "80px";
       if (leaf === ""){
         var verificationNeeded = document.createTextNode("No");
       }
@@ -457,7 +487,7 @@ App = {
       }, false);
       var leafInput = document.createElement("INPUT");
       leafInput.setAttribute("type", "text");
-      leafInput.style.width = "100px";
+      leafInput.style.width = "80px";
       var getLeafLink = document.createElement("a");
       var textnode11 = document.createTextNode("Get Leaf");
       getLeafLink.style.color = "blue";
@@ -473,12 +503,13 @@ App = {
       cell5.appendChild(textnode5);
       cell6.appendChild(payLink);
       cell7.appendChild(terminateLink);
-      cell8.appendChild(proofLink);
-      cell9.appendChild(proofInput);
-      cell10.appendChild(verificationNeeded);
-      cell11.appendChild(leafLink);
-      cell12.appendChild(leafInput);
-      cell13.appendChild(getLeafLink)
+      cell8.appendChild(checkPaymentLink);
+      cell9.appendChild(proofLink);
+      cell10.appendChild(proofInput);
+      cell11.appendChild(verificationNeeded);
+      cell12.appendChild(leafLink);
+      cell13.appendChild(leafInput);
+      cell14.appendChild(getLeafLink)
       row.appendChild(cell0);
       row.appendChild(cell1);
       row.appendChild(cell2);
@@ -493,6 +524,7 @@ App = {
       row.appendChild(cell11);
       row.appendChild(cell12);
       row.appendChild(cell13);
+      row.appendChild(cell14);
       tabBody.appendChild(row);
     }
   },
