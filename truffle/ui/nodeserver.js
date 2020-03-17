@@ -33,7 +33,7 @@ app.post('/upload', function (req, res) {
               res.send("Error storing the file.");
 	    }
             else{
-	      res.send("Successfully uploaded file.")
+	      res.redirect("/")
 	    }
 	  })
 	}

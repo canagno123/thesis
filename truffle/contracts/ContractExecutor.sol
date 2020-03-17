@@ -14,6 +14,8 @@ contract contractExecutor{
 	mapping(uint => uint) verifications;
     ProviderRating ratings;
 	event setLeafEvent(uint _id, string _leaf);
+	event verificationSuccess(uint _id);
+	event verificationReject(uint _id);
 
 	//State Constants
 	uint8 constant public ACTIVE = 1;
@@ -123,10 +125,12 @@ contract contractExecutor{
 				leafToVerify[_id] = "";
 				verifications[_id] = now;
 				verificationMessage = "OK";
+				emit verificationSuccess(_id);
 			}
 			else{
 				terminateCulpProvider(_id);
 				verificationMessage = "NOK";
+				emit verificationReject(_id);
 			}
 		}
 		else
@@ -256,7 +260,7 @@ contract contractExecutor{
 		_;
 	}
 	modifier onlyMoreThanOneMonth(uint _id){
-		if (timeDif(_id) <= 2629743)
+		if (timeDif(_id) <= 30)
 			revert("Contract can be terminated with the client culpable only if more than one month has passed since last payment.");
 		_;
 	}

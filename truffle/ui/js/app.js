@@ -80,14 +80,39 @@ App = {
       App.contracts.contractExecutor.deployed().then(function(instance) {
         contractExecutorInstance = instance;
         var setLeafEvent = contractExecutorInstance.setLeafEvent();
+        var verificationSuccessEvent = contractExecutorInstance.verificationSuccess();
+        var verificationRejectEvent = contractExecutorInstance.verificationReject();
         var count = 0;
         setLeafEvent.watch(function(error, result){
           if (count != 0 && !error){
             alert("Verification requested for contract with id: " + result.args._id);
-            lastLeaf = result.args._leaf;
             count++;
           }
-          else if (count ==0){
+          else if (count == 0){
+            count++;
+          }
+          else if (error){
+            console.log(error);
+          }
+        })
+        verificationSuccessEvent.watch(function(error, result){
+          if (count != 0 && !error){
+            alert("Verification completed successfuly for contract with id: " + result.args._id);
+            count++;
+          }
+          else if (count == 0){
+            count++;
+          }
+          else if (error){
+            console.log(error);
+          }
+        })
+        verificationRejectEvent.watch(function(error, result){
+          if (count != 0 && !error){
+            alert("Verification failed for contract with id: " + result.args._id +". Contract is terminated with the provider as culpable.");
+            count++;
+          }
+          else if (count == 0){
             count++;
           }
           else if (error){
@@ -577,6 +602,7 @@ App = {
     // Return Auction Information
     return auctionExecutorInstance.initAuction(provNum, Math.round(inputFile.size/1024/1024), collateralAuction, root);
     }).then(function(result) {
+          alert("File uploaded successfully, auction initiated." )
           console.log("Initiating auction..");
         }).catch(function(err) {
           console.log(err.message);
