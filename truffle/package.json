@@ -13,7 +13,7 @@
     "connect": "^3.7.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "express-fileupload": "^1.1.6-alpha.4",
+    "express-fileupload": "^1.1.9",
     "keccak256": "^1.0.0",
     "lodash": "^4.17.15",
     "merkletreejs": "^0.1.7",
